@@ -11,6 +11,7 @@ namespace APT
     public partial class SearchResults : System.Web.UI.Page
     {
         Controller controller;
+        int pageNumber;
         protected void Page_Load(object sender, EventArgs e)
         {
             if(!IsPostBack)
@@ -21,19 +22,20 @@ namespace APT
                 Textbox_Input.Text = searchResult;
 
                 //Actual Data
+                if (searchResult == null)
+                    return;
                 string[] words = searchResult.Split(null);
                 //STEM WORDS BEFORE SENDING NOT IMPLEMENTED!
                 controller = new Controller();
                 DataTable dt = controller.querySearch(words);
 
                 //Controls
-
                 for (int i = 0; i < words.Length; i++)
                 {
                     LinkUserControl link = Page.LoadControl("~/UserControls/LinkUserControl.ascx") as LinkUserControl;
                     if (link != null && dt != null)
                     {
-                        link.LinkHead = "HI WORLD " + i;
+                        link.LinkHead = (dt.Rows[i][2]).ToString();
                         link.LinkHyperLink = (dt.Rows[i][1]).ToString();
                     }
                     LinksPlaceHolder.Controls.Add(link);
