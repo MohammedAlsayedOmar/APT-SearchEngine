@@ -1,4 +1,4 @@
-#from nltk.stem.porter import * 
+from nltk.stem.porter import * 
 import DataBase
 import urllib.request
 from bs4 import *
@@ -9,7 +9,7 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning, module='bs4')
 
 
-import nltk
+#import nltk
 #lemma = nltk.wordnet.WordNetLemmatizer()
 #lemma.lemmatize('article')
 #lemma.lemmatize('leaves')
@@ -18,7 +18,8 @@ import nltk
 class Indexer:
     def __init__(self):
         self.StoppingWords =  re.split('\n',open('StoppingWords.txt','r').read())
-        self.lemma = nltk.wordnet.WordNetLemmatizer()
+        self.Porter = PorterStemmer()
+        #self.lemma = nltk.wordnet.WordNetLemmatizer()
         self.DataBaseMaster = DataBase.DataBaseMaster()
         self.FilesLocation = self.GetFilesLocationDirectory()
         self.ImagesFileLocation = self.GetImageFilesLocationDirectory();
@@ -66,7 +67,7 @@ class Indexer:
                 for word in Title:
                     word = word.lower()
                     if word not in self.StoppingWords:
-                        stemedWord = self.lemma.lemmatize(word)
+                        stemedWord = self.Porter.stem(word)
                         if not self.DataBaseMaster.KeyWordDoesExist(stemedWord):
                             self.DataBaseMaster.InsertKeyWord(stemedWord)
                         Result2 = self.DataBaseMaster.GetWordID(stemedWord)
@@ -77,7 +78,7 @@ class Indexer:
                 for word in Headers:
                     word = word.lower()
                     if word not in self.StoppingWords:
-                        stemedWord = self.lemma.lemmatize(word)
+                        stemedWord = self.Porter.stem(word)
                         if not self.DataBaseMaster.KeyWordDoesExist(stemedWord):
                             self.DataBaseMaster.InsertKeyWord(stemedWord)
                         Result2 = self.DataBaseMaster.GetWordID(stemedWord)
@@ -88,7 +89,7 @@ class Indexer:
                 for word in Paragraphs:
                     word = word.lower()
                     if word not in self.StoppingWords:
-                        stemedWord = self.lemma.lemmatize(word)
+                        stemedWord = self.Porter.stem(word)
                         if not self.DataBaseMaster.KeyWordDoesExist(stemedWord):
                             self.DataBaseMaster.InsertKeyWord(stemedWord)
                         Result2 = self.DataBaseMaster.GetWordID(stemedWord)
@@ -201,7 +202,7 @@ class Indexer:
                         remove_format = re.split(r'[/\n\r\s+,_-]', remove_format)
          
                         for i in remove_format:
-                            temp1 =  self.lemma.lemmatize(i)
+                            temp1 =  self.Porter.stem(i)
                             if temp1 != '':
                                 if temp1 not in self.StoppingWords:
                                     if not self.DataBaseMaster.ImageKeyWordDoesExist(temp1):
@@ -219,7 +220,7 @@ class Indexer:
 
 
                         for b in alt:
-                            temp= self.lemma.lemmatize(b)
+                            temp= self.Porter.stem(b)
                             if temp !='':
                                 if temp not in self.StoppingWords:
                                     if not self.DataBaseMaster.ImageKeyWordDoesExist(temp):
