@@ -18,7 +18,7 @@ import nltk
 class Indexer:
     def __init__(self):
         self.StoppingWords =  re.split('\n',open('StoppingWords.txt','r').read())
-        self.Porter = nltk.wordnet.WordNetLemmatizer()
+        self.lemma = nltk.wordnet.WordNetLemmatizer()
         self.DataBaseMaster = DataBase.DataBaseMaster()
         self.FilesLocation = self.GetFilesLocationDirectory()
         self.ImagesFileLocation = self.GetImageFilesLocationDirectory();
@@ -61,11 +61,12 @@ class Indexer:
                 Title ,Headers, Paragraphs = self.GetTextFromHtml(HtmlData, File_ID)
                 if Title == []:
                     continue
+                self.DataBaseMaster.DeleteDataBeforeIndexing(File_ID)
 
                 for word in Title:
                     word = word.lower()
                     if word not in self.StoppingWords:
-                        stemedWord = self.Porter.lemmatize(word)
+                        stemedWord = self.lemma.lemmatize(word)
                         if not self.DataBaseMaster.KeyWordDoesExist(stemedWord):
                             self.DataBaseMaster.InsertKeyWord(stemedWord)
                         Result2 = self.DataBaseMaster.GetWordID(stemedWord)
@@ -76,7 +77,7 @@ class Indexer:
                 for word in Headers:
                     word = word.lower()
                     if word not in self.StoppingWords:
-                        stemedWord = self.Porter.lemmatize(word)
+                        stemedWord = self.lemma.lemmatize(word)
                         if not self.DataBaseMaster.KeyWordDoesExist(stemedWord):
                             self.DataBaseMaster.InsertKeyWord(stemedWord)
                         Result2 = self.DataBaseMaster.GetWordID(stemedWord)
@@ -87,7 +88,7 @@ class Indexer:
                 for word in Paragraphs:
                     word = word.lower()
                     if word not in self.StoppingWords:
-                        stemedWord = self.Porter.lemmatize(word)
+                        stemedWord = self.lemma.lemmatize(word)
                         if not self.DataBaseMaster.KeyWordDoesExist(stemedWord):
                             self.DataBaseMaster.InsertKeyWord(stemedWord)
                         Result2 = self.DataBaseMaster.GetWordID(stemedWord)
@@ -102,7 +103,7 @@ class Indexer:
                 #print("FINISHED ALL THE SITES PLEASE ADD MORE")
 
 
-    def GetTextFromHtml(self,HtmlData, File_ID):
+    def GetTextFromHtml(self,HtmlData, URL_ID):
         MySoup =  BeautifulSoup(HtmlData)
         PageTitle=[]
         Texts = []
@@ -111,13 +112,14 @@ class Indexer:
 
         try:
             PageTitleTemp = MySoup.find('title').string
+            self.DataBaseMaster.UpdateURLTitle(URL_ID,PageTitle);
             PageTitle = regex.sub(' ',PageTitleTemp)
             PageTitle = re.split('([\t\s\n\r])|x[a-zA-Z]*', PageTitle)
 
         except:
-            print ("EXCEPTION IN FILE " + str(File_ID) + ", NO TITLE: DELETEING FROM DATABASE!")
+            print ("EXCEPTION IN FILE " + str(URL_ID) + ", NO TITLE: DELETEING FROM DATABASE!")
             #self.DataBaseMaster.DeleteURLbyID(File_ID);
-            self.DataBaseMaster.UpdateURLStatus('D',File_ID)
+            self.DataBaseMaster.UpdateURLStatus('D',URL_ID)
             return PageTitle ,Headers,Texts
 
 
@@ -139,7 +141,7 @@ class Indexer:
                         else:
                             Texts.append(j.string)
 
-        self.ImageSearch(MySoup,File_ID)
+        self.ImageSearch(MySoup,URL_ID)
         PageTitle = list(filter(None, PageTitle))
         Headers = list(filter(None, Headers))
         Texts = list(filter(None, Texts))
@@ -199,7 +201,7 @@ class Indexer:
                         remove_format = re.split(r'[/\n\r\s+,_-]', remove_format)
          
                         for i in remove_format:
-                            temp1 =  self.Porter.lemmatize(i)
+                            temp1 =  self.lemma.lemmatize(i)
                             if temp1 != '':
                                 if temp1 not in self.StoppingWords:
                                     if not self.DataBaseMaster.ImageKeyWordDoesExist(temp1):
@@ -217,7 +219,7 @@ class Indexer:
 
 
                         for b in alt:
-                            temp= self.Porter.lemmatize(b)
+                            temp= self.lemma.lemmatize(b)
                             if temp !='':
                                 if temp not in self.StoppingWords:
                                     if not self.DataBaseMaster.ImageKeyWordDoesExist(temp):

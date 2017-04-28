@@ -52,7 +52,7 @@ class Craweler:
                         if not self.MyDataBaseMaster.URLDoesExist(i):
                             if self.MyDataBaseMaster.GetNumberOfUrlsInDB()[0][0] < 500:
                                 ThreadLock.acquire()
-                                self.MyDataBaseMaster.InsertNewUrl(i,'N',0)
+                                self.MyDataBaseMaster.InsertNewUrl(i,'N',0,"")
                                 ThreadLock.release()
                     except:
                         ThreadLock.release()

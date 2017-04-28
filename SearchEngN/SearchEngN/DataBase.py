@@ -14,10 +14,17 @@ class DataBaseMaster:
     def InsertNewUrl(self,URL,status,freq):
         URL = self.SlashHTML(URL)      
         try:
-           self.Connector.execute("insert into dbo.Url_Container (URLName,Status,Frequency) values ('%s','%s',%d)" % (URL,status,freq))
+           self.Connector.execute("insert into dbo.Url_Container (URLName,Status,Frequency,URL_Title) values ('%s','%s',%d,'%s')" % (URL,status,freq,title))
            self.Connector.commit()
         except:
           self.Connector.rollback()
+
+    def UpdateURLTitle(self,URLID,title):
+        try:
+            self.Curser.execute("update Url_Container set URL_Title='%s' where URL_ID = %d" % (title,URLID))
+            self.Connector.commit()
+        except:
+            self.Connector.rollback() 
         
 
     def URLDoesExist(self,Data):
@@ -28,6 +35,18 @@ class DataBaseMaster:
             return True
         else :
             return False
+
+    def DeleteDataBeforeIndexing(self,URLID):
+        try:
+            self.Curser.execute("delete from KeyWordsPosition_Titles where URL_ID=%d" % (URLID))
+            self.Connector.commit()
+            self.Curser.execute("delete from KeyWordsPosition_Headers where URL_ID=%d" % (URLID))
+            self.Connector.commit()
+            self.Curser.execute("delete from KeyWordsPosition_Paragraphs where URL_ID=%d" % (URLID))
+            self.Connector.commit()
+        except:
+            self.Connector.rollback() 
+
         
 
     def KeyWordDoesExist(self,Data):
