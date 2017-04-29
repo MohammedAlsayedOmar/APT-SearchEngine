@@ -50,6 +50,117 @@ namespace APT
         }
 
 
+        string FromClasuePhraseSearch(string KWP_TableName, int index)
+        {
+            return "KeyWords w" + index.ToString() + "," + KWP_TableName + " kwp_t" + index.ToString() + ", Url_Container url" + index.ToString() + " ";
+        }
+        string WhereClasuePhraseSearch(string word, int index)
+        {
+            return "w" + index.ToString() + ".KeyWords='" + word + "' and w" + index.ToString() + ".KeyWord_ID = kwp_t" + index.ToString() + ".KeyWord_ID and kwp_t" + index.ToString() + ".URL_ID = url" + index.ToString() + ".URL_ID ";
+        }
+        string WhereSpecialPhraseSearchClause(int index)
+        {
+            return "kwp_t" + index.ToString() + ".Position = kwp_t" + (index - 1).ToString() + ".Position + 1 ";
+        }
+        public DataTable phraseSearch(string[] words)
+        {
+            string innerQueryTitle = "select DISTINCT url0.URL_ID,url0.URLName ,url0.URL_Title from ";
+            string innerQueryHeader = "select DISTINCT url0.URL_ID,url0.URLName ,url0.URL_Title from ";
+            string innerQueryParagraph = "select DISTINCT url0.URL_ID,url0.URLName ,url0.URL_Title from ";
+
+            //1
+            for (int i = 0; i < words.Length; i++)
+            {
+                innerQueryTitle += FromClasuePhraseSearch("KeyWordsPosition_Titles", i);
+                if (words.Length > 1 && i != words.Length - 1)
+                {
+                    innerQueryTitle += ", ";
+                }
+            }
+            innerQueryTitle += "where ";
+            for (int i = 0; i < words.Length; i++)
+            {
+                innerQueryTitle += WhereClasuePhraseSearch(words[i], i);
+                if (words.Length > 1 && i != words.Length - 1)
+                {
+                    innerQueryTitle += "and ";                    
+                }
+            }
+            innerQueryTitle += "and ";
+            for (int i = 1; i < words.Length; i++)
+            {
+                innerQueryTitle += WhereSpecialPhraseSearchClause(i);
+                if (words.Length > 1 && i != words.Length - 1)
+                {
+                    innerQueryTitle += "and ";
+                }
+            }
+           
+            //2
+            for (int i = 0; i < words.Length; i++)
+            {
+                innerQueryHeader += FromClasuePhraseSearch("KeyWordsPosition_Headers", i);
+                if (words.Length > 1 && i != words.Length - 1)
+                {
+                    innerQueryHeader += ", ";
+                }
+            }
+            innerQueryHeader += "where ";
+            for (int i = 0; i < words.Length; i++)
+            {
+                innerQueryHeader += WhereClasuePhraseSearch(words[i], i);
+                if (words.Length > 1 && i != words.Length - 1)
+                {
+                    innerQueryHeader += "and ";
+                    if (i > 0)
+                    {
+                        innerQueryHeader += WhereSpecialPhraseSearchClause(i);
+                        innerQueryHeader += "and ";
+                    }
+                }
+            }
+
+            //3
+            for (int i = 0; i < words.Length; i++)
+            {
+                innerQueryParagraph += FromClasuePhraseSearch("KeyWordsPosition_Paragraphs", i);
+                if (words.Length > 1 && i != words.Length - 1)
+                {
+                    innerQueryParagraph += ", ";
+                }
+            }
+            innerQueryParagraph += "where ";
+            for (int i = 0; i < words.Length; i++)
+            {
+                innerQueryParagraph += WhereClasuePhraseSearch(words[i], i);
+                if (words.Length > 1 && i != words.Length - 1)
+                {
+                    innerQueryParagraph += "and ";
+                    if (i > 0)
+                    {
+                        innerQueryParagraph += WhereSpecialPhraseSearchClause(i);
+                        innerQueryParagraph += "and ";
+                    }
+                }
+            }
+            string query = "select distinct URL_ID,URLName, URL_Title from( " + innerQueryTitle + " union all " + innerQueryHeader + " union all " + innerQueryParagraph + " )t";
+            return dbMan.ExecuteReader(query);
+        }
+
+        /*
+         
+            select DISTINCT url0.URL_ID,url0.URLName ,url0.URL_Title 
+                                from 
+                            KeyWords w0,KeyWordsPosition_Titles kwp_t0, Url_Container url0,
+                            KeyWords w1,KeyWordsPosition_Titles kwp_t1, Url_Container url1 
+                where 
+            w0.KeyWords='top     and w0.KeyWord_ID = kwp_t0.KeyWord_ID and kwp_t0.URL_ID = url.URL_ID and
+            w1.KeyWords='site'   and w1.KeyWord_ID = kwp_t1.KeyWord_ID and kwp_t1.URL_ID = url.URL_ID
+
+            and kwp_t1.Position = kwp_t0.Position + 1 
+        */
+
+
 
     }
 }

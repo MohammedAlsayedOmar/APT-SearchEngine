@@ -117,10 +117,11 @@ class Indexer:
 
         try:
             PageTitleTemp = MySoup.find('title').string
-            l = ["'", ]
-            for i in l:
-                if i in PageTitleTemp:
-                    PageTitleTemp = PageTitleTemp.replace(i, '\''+i)
+            #if "'" in PageTitleTemp:
+            #    l = ["'", ]
+            #    for i in l:
+            #        if i in PageTitleTemp:
+            #            PageTitleTemp = PageTitleTemp.replace(i, '\''+i)
                 
             self.DataBaseMaster.UpdateURLTitle(URL_ID,PageTitleTemp);
             PageTitle = regex.sub(' ',PageTitleTemp)

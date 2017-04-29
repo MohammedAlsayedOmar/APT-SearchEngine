@@ -23,7 +23,7 @@ namespace APT
             }
             else
             {
-                Response.Redirect("SearchResults.aspx?Textbox_Input=" + Textbox_Input.Text);
+                Response.Redirect("SearchResults.aspx?Textbox_Input=" + Textbox_Input.Text + "&Page_Number=1");
             }
             
         }
@@ -31,7 +31,7 @@ namespace APT
         protected void Btn_ImageSearch_Click(object sender, EventArgs e)
         {
             if(Textbox_Input.Text!= "")
-                Response.Redirect("SearchImageResults.aspx?Textbox_Input=" + Textbox_Input.Text);
+                Response.Redirect("SearchImageResults.aspx?Textbox_Input=" + Textbox_Input.Text + "&Page_Number=1");
         }
     }
 }

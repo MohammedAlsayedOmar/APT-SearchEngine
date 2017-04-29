@@ -11,7 +11,6 @@ namespace APT
     public partial class SearchResults : System.Web.UI.Page
     {
         Controller controller;
-        int pageNumber;
         protected void Page_Load(object sender, EventArgs e)
         {
             if(!IsPostBack)
@@ -20,6 +19,13 @@ namespace APT
                 string searchResult = Request.QueryString["Textbox_Input"];
                 Label_Data.Text = searchResult;
                 Textbox_Input.Text = searchResult;
+                string pageNumber = Request.QueryString["Page_Number"];
+                pageNum.InnerText = pageNumber;
+                if (pageNum.InnerText == "1")
+                {
+                    arrowLeft.Visible = false;
+                    arrowRight.HRef = "SearchImageResults.aspx?Textbox_Input=" + Label_Data.Text + "&Page_Number=2";
+                }
 
                 //Actual Data
                 if (searchResult == null)
@@ -27,7 +33,10 @@ namespace APT
                 string[] words = searchResult.Split(null);
                 //STEM WORDS BEFORE SENDING NOT IMPLEMENTED!
                 controller = new Controller();
-                DataTable dt = controller.querySearch(words);
+                //DataTable dt = controller.querySearch(words);
+                DataTable dt = controller.phraseSearch(words);
+
+                
 
                 //Controls
                 for (int i = 0; i < words.Length; i++)
@@ -54,13 +63,13 @@ namespace APT
             }
             else
             {
-                Response.Redirect("SearchImageResults.aspx?Textbox_Input=" + Label_Data.Text);
+                Response.Redirect("SearchImageResults.aspx?Textbox_Input=" + Label_Data.Text + "&Page_Number=1");
             }
         }
 
         protected void BtnSearchAgain_Click(object sender, EventArgs e)
         {
-            Response.Redirect("SearchResults.aspx?Textbox_Input=" + Textbox_Input.Text);
+            Response.Redirect("SearchResults.aspx?Textbox_Input=" + Textbox_Input.Text + "&Page_Number=1");
         }
     }
 }

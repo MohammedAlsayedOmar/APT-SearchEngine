@@ -31,5 +31,19 @@
         <asp:PlaceHolder ID="LinksPlaceHolder" runat="server"></asp:PlaceHolder>
     </div>
 
+    <div class="row center-block text-center">
+        <div class ="col-md-4"></div>               
+        <div class ="col-md-1">
+             <a id="arrowLeft" runat="server" class="glyphicon glyphicon-chevron-left"></a>
+        </div>
+        <div class ="col-md-2">
+            <p id="pageNum" runat="server"> 1 </p>
+        </div>
+        <div class ="col-md-1">
+            <a id="arrowRight" runat="server" class="glyphicon glyphicon-chevron-right"></a>
+        </div>
+        <div class ="col-md-4"></div>
+    </div>
+
 
 </asp:Content>
