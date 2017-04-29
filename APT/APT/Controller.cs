@@ -147,20 +147,6 @@ namespace APT
             return dbMan.ExecuteReader(query);
         }
 
-        /*
-         
-            select DISTINCT url0.URL_ID,url0.URLName ,url0.URL_Title 
-                                from 
-                            KeyWords w0,KeyWordsPosition_Titles kwp_t0, Url_Container url0,
-                            KeyWords w1,KeyWordsPosition_Titles kwp_t1, Url_Container url1 
-                where 
-            w0.KeyWords='top     and w0.KeyWord_ID = kwp_t0.KeyWord_ID and kwp_t0.URL_ID = url.URL_ID and
-            w1.KeyWords='site'   and w1.KeyWord_ID = kwp_t1.KeyWord_ID and kwp_t1.URL_ID = url.URL_ID
-
-            and kwp_t1.Position = kwp_t0.Position + 1 
-        */
-
-
 
     }
 }
