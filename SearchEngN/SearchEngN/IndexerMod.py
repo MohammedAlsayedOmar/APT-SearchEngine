@@ -1,4 +1,4 @@
-from nltk.stem.porter import * 
+#from nltk.stem.porter import * 
 import DataBase
 import urllib.request
 from bs4 import *
@@ -9,7 +9,7 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning, module='bs4')
 
 
-#import nltk
+import nltk
 #lemma = nltk.wordnet.WordNetLemmatizer()
 #lemma.lemmatize('article')
 #lemma.lemmatize('leaves')
@@ -17,9 +17,9 @@ warnings.filterwarnings("ignore", category=UserWarning, module='bs4')
 
 class Indexer:
     def __init__(self):
-        self.StoppingWords =  re.split('\n',open('StoppingWords.txt','r').read())
-        self.Porter = PorterStemmer()
-        #self.lemma = nltk.wordnet.WordNetLemmatizer()
+        #self.StoppingWords =  re.split('\n',open('StoppingWords.txt','r').read())
+        self.IDKWhatToNameThisButTheseAreTheWordsIDKWhatToDoAboutThanksForReading = ['',' ']
+        self.lemma = nltk.wordnet.WordNetLemmatizer()
         self.DataBaseMaster = DataBase.DataBaseMaster()
         self.FilesLocation = self.GetFilesLocationDirectory()
         self.ImagesFileLocation = self.GetImageFilesLocationDirectory();
@@ -66,8 +66,9 @@ class Indexer:
 
                 for word in Title:
                     word = word.lower()
-                    if word not in self.StoppingWords:
-                        stemedWord = self.Porter.stem(word)
+                    #if word not in self.StoppingWords:
+                    if word not in self.IDKWhatToNameThisButTheseAreTheWordsIDKWhatToDoAboutThanksForReading:
+                        stemedWord = self.lemma.lemmatize(word)
                         if not self.DataBaseMaster.KeyWordDoesExist(stemedWord):
                             self.DataBaseMaster.InsertKeyWord(stemedWord)
                         Result2 = self.DataBaseMaster.GetWordID(stemedWord)
@@ -77,8 +78,9 @@ class Indexer:
 
                 for word in Headers:
                     word = word.lower()
-                    if word not in self.StoppingWords:
-                        stemedWord = self.Porter.stem(word)
+                    #if word not in self.StoppingWords:
+                    if word not in self.IDKWhatToNameThisButTheseAreTheWordsIDKWhatToDoAboutThanksForReading:
+                        stemedWord = self.lemma.lemmatize(word)
                         if not self.DataBaseMaster.KeyWordDoesExist(stemedWord):
                             self.DataBaseMaster.InsertKeyWord(stemedWord)
                         Result2 = self.DataBaseMaster.GetWordID(stemedWord)
@@ -88,8 +90,9 @@ class Indexer:
 
                 for word in Paragraphs:
                     word = word.lower()
-                    if word not in self.StoppingWords:
-                        stemedWord = self.Porter.stem(word)
+                    #if word not in self.StoppingWords:
+                    if word not in self.IDKWhatToNameThisButTheseAreTheWordsIDKWhatToDoAboutThanksForReading:
+                        stemedWord = self.lemma.lemmatize(word)
                         if not self.DataBaseMaster.KeyWordDoesExist(stemedWord):
                             self.DataBaseMaster.InsertKeyWord(stemedWord)
                         Result2 = self.DataBaseMaster.GetWordID(stemedWord)
@@ -97,7 +100,8 @@ class Indexer:
                         self.DataBaseMaster.InsertKeyWordPositionParagraph(File_ID,Word_ID,Position)
                         Position = Position + 1
 
-
+                totalNumberOfWords = Position+HeaderPosition+TitlePosition
+                self.DataBaseMaster.UpdateNumberOfWords(File_ID,totalNumberOfWords)
                 self.DataBaseMaster.UpdateURLStatus('I', File_ID)
                 print("INDEXED FILE: " + str(File_ID))
             #else :
@@ -113,7 +117,12 @@ class Indexer:
 
         try:
             PageTitleTemp = MySoup.find('title').string
-            self.DataBaseMaster.UpdateURLTitle(URL_ID,PageTitle);
+            l = ["'", ]
+            for i in l:
+                if i in PageTitleTemp:
+                    PageTitleTemp = PageTitleTemp.replace(i, '\''+i)
+                
+            self.DataBaseMaster.UpdateURLTitle(URL_ID,PageTitleTemp);
             PageTitle = regex.sub(' ',PageTitleTemp)
             PageTitle = re.split('([\t\s\n\r])|x[a-zA-Z]*', PageTitle)
 
@@ -142,7 +151,7 @@ class Indexer:
                         else:
                             Texts.append(j.string)
 
-        self.ImageSearch(MySoup,URL_ID)
+        #self.ImageSearch(MySoup,URL_ID)        #UNCOMMENT TO CRAWL IMAGES
         PageTitle = list(filter(None, PageTitle))
         Headers = list(filter(None, Headers))
         Texts = list(filter(None, Texts))
@@ -202,15 +211,15 @@ class Indexer:
                         remove_format = re.split(r'[/\n\r\s+,_-]', remove_format)
          
                         for i in remove_format:
-                            temp1 =  self.Porter.stem(i)
+                            temp1 =  self.lemma.lemmatize(i)
                             if temp1 != '':
-                                if temp1 not in self.StoppingWords:
-                                    if not self.DataBaseMaster.ImageKeyWordDoesExist(temp1):
-                                        self.DataBaseMaster.InsertImageKeyWord(temp1)
-                                    keyid1 = self.DataBaseMaster.GetImageWordID(temp1)
-                                    Word_ID1 = int(keyid1[0][0])
-                                    Image_ID1=int(self.DataBaseMaster.GetImageID_ByName(imgname)[0][0])
-                                    self.DataBaseMaster.Link_URL_KeyWords(URL_ID,Word_ID1,Image_ID1)
+                                #if temp1 not in self.StoppingWords:
+                                if not self.DataBaseMaster.ImageKeyWordDoesExist(temp1):
+                                    self.DataBaseMaster.InsertImageKeyWord(temp1)
+                                keyid1 = self.DataBaseMaster.GetImageWordID(temp1)
+                                Word_ID1 = int(keyid1[0][0])
+                                Image_ID1=int(self.DataBaseMaster.GetImageID_ByName(imgname)[0][0])
+                                self.DataBaseMaster.Link_URL_KeyWords(URL_ID,Word_ID1,Image_ID1)
 
                 ####################################################################################
                         alt=image.get('alt','')
@@ -220,12 +229,12 @@ class Indexer:
 
 
                         for b in alt:
-                            temp= self.Porter.stem(b)
+                            temp= self.lemma.lemmatize(b)
                             if temp !='':
-                                if temp not in self.StoppingWords:
-                                    if not self.DataBaseMaster.ImageKeyWordDoesExist(temp):
-                                        self.DataBaseMaster.InsertImageKeyWord(temp)
-                                    keyid=self.DataBaseMaster.GetImageWordID(temp)
-                                    Word_ID = int(keyid[0][0])
-                                    Image_ID = int(self.DataBaseMaster.GetImageID_ByName(imgname)[0][0])
-                                    self.DataBaseMaster.Link_URL_KeyWords(URL_ID, Word_ID1,Image_ID)  # 1: from musgi(file opened id),src:get id from imagename
+                                #if temp not in self.StoppingWords:
+                                if not self.DataBaseMaster.ImageKeyWordDoesExist(temp):
+                                    self.DataBaseMaster.InsertImageKeyWord(temp)
+                                keyid=self.DataBaseMaster.GetImageWordID(temp)
+                                Word_ID = int(keyid[0][0])
+                                Image_ID = int(self.DataBaseMaster.GetImageID_ByName(imgname)[0][0])
+                                self.DataBaseMaster.Link_URL_KeyWords(URL_ID, Word_ID1,Image_ID)  # 1: from musgi(file opened id),src:get id from imagename

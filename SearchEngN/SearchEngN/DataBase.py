@@ -11,7 +11,7 @@ class DataBaseMaster:
                                         "Trusted_Connection=yes;")
         self.Curser = self.Connector.cursor()
 
-    def InsertNewUrl(self,URL,status,freq):
+    def InsertNewUrl(self,URL,status,freq,title):
         URL = self.SlashHTML(URL)      
         try:
            self.Connector.execute("insert into dbo.Url_Container (URLName,Status,Frequency,URL_Title) values ('%s','%s',%d,'%s')" % (URL,status,freq,title))
@@ -25,7 +25,23 @@ class DataBaseMaster:
             self.Connector.commit()
         except:
             self.Connector.rollback() 
-        
+
+
+    def IncrementURLPopularity(self,URLID):
+        try:
+            self.Curser.execute("update Url_Container set Frequency=Frequency+1 where URL_ID = %d" % (URLID))
+            self.Connector.commit()
+        except:
+            self.Connector.rollback()
+
+            
+    def IncrementURLPopularityByName(self,URLName):
+        try:
+            self.Curser.execute("update Url_Container set Frequency=Frequency+1 where URLName = '%s'" % (URLName))
+            self.Connector.commit()
+        except:
+            self.Connector.rollback() 
+               
 
     def URLDoesExist(self,Data):
         Data = self.SlashHTML(Data)    
@@ -44,6 +60,13 @@ class DataBaseMaster:
             self.Connector.commit()
             self.Curser.execute("delete from KeyWordsPosition_Paragraphs where URL_ID=%d" % (URLID))
             self.Connector.commit()
+        except:
+            self.Connector.rollback() 
+
+    def DeleteDataBeforeHTMLDATA(self,URLID):
+        try:
+            self.Curser.execute("delete from HtmlData where URL_ID=%d" % (URLID))
+            self.Connector.commit()   
         except:
             self.Connector.rollback() 
 
@@ -159,6 +182,14 @@ class DataBaseMaster:
             self.Connector.commit()
          except:
             self.Connector.rollback()
+
+    
+    def UpdateNumberOfWords(self,URLID,numberOfWords):
+        try:
+            self.Curser.execute("update Url_Container set TotalNumberOfWords=%d where URL_ID=%d" % (numberOfWords,URLID))
+            self.Connector.commit()
+        except:
+            self.Connector.rollback() 
 
 #Extra test
     def InsertHTMLData(self,URL_ID,htmlData):

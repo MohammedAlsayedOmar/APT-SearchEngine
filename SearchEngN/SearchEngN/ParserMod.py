@@ -18,11 +18,17 @@ class Parser(HTMLParser):
         self.MyUrls = []
         self.BaseUrl = ""
         self.DisAllowedUrls =[]
-        self.IgnoringTypes = ['.css' ,'js','.png','gif']
+        self.IgnoringTypes = ['.css' ,'.js','.png','.gif','.ico','.jpg','.jpeg','.svg']
         self.UrlDelay = 0
         self.DataBaseMaster = DataBase.DataBaseMaster()
         self.HtmlData = " "
+        self.NOTENGLISHSITE = False
     def handle_starttag(self, tag, attrs): # built in function to get sublinks 
+        if tag == "html":
+            for (key, value) in attrs:
+                if key == 'lang':
+                    if 'en' not in value:
+                        self.NOTENGLISHSITE=True
         if tag =='a':
             for (key, value) in attrs:
                 if key == 'href':
@@ -44,6 +50,7 @@ class Parser(HTMLParser):
             return [],False,0,saveCompleted
         self.BaseUrl = Url
         try:
+
             OpenedUrl = urlopen(Url)
         except:
             return [],False,0,saveCompleted
@@ -53,15 +60,23 @@ class Parser(HTMLParser):
         ThreadLock.acquire()
         Result = self.DataBaseMaster.GetURLID(Url)
         File_ID = int(Result[0][0]) 
-        saveCompleted =  self.SaveHtmlToFile(self.HtmlData)
-        if saveCompleted == False:
-            ThreadLock.release()
-            return [],False,0,False,saveCompleted
-        ThreadLock.release()
-
-        if self.DataBaseMaster.GetNumberOfUrlsInDB()[0][0] >= 500:
+     
+        if self.DataBaseMaster.GetNumberOfUrlsInDB()[0][0] >= 5000:
            return [],False,0,saveCompleted
         self.feed(HtmlDecodedData)
+        if self.NOTENGLISHSITE == True:
+            return [],False,0,saveCompleted
+
+        dataToSave = str(self.HtmlData)
+        dataToSave = dataToSave.replace("\\n", ' ')
+        dataToSave = dataToSave.replace("\\t", ' ')
+        saveCompleted =  self.SaveHtmlToFile(dataToSave,File_ID)
+        if saveCompleted == False:
+            ThreadLock.release()
+            return [],False,0,saveCompleted
+        ThreadLock.release()
+
+
         SplittedHtml = re.split('"',HtmlDecodedData)
         for i in SplittedHtml:
             if str(i).startswith("http://") or str(i).startswith("https://"):
@@ -105,9 +120,12 @@ class Parser(HTMLParser):
                  except:
                     return str(HtmlEncodedData)
 
-    def SaveHtmlToFile(self,HtmlDecodedData):
+    def SaveHtmlToFile(self,HtmlDecodedData,File_ID):
+        self.DataBaseMaster.DeleteDataBeforeHTMLDATA(File_ID)
+        
+        HtmlDecodedData = HtmlDecodedData.replace("\\n", ' ')
+        HtmlDecodedData = HtmlDecodedData.replace("\\t", ' ')
         try:
-            File_ID = int(self.DataBaseMaster.GetURLID(self.BaseUrl)[0][0])
             htmlSlashed = str(self.HtmlData)
             l = ["'", ]
             for i in l:
