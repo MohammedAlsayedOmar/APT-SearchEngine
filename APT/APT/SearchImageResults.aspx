@@ -25,8 +25,9 @@
     </div>
     <hr />
 
-    <asp:PlaceHolder ID="ImagesPlaceHolder" runat="server"></asp:PlaceHolder>
-
+    <div class="container">
+        <asp:PlaceHolder ID="ImagesPlaceHolder" runat="server"></asp:PlaceHolder>
+    </div>
     <hr />
 
     

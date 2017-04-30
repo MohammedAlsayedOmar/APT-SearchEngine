@@ -47,9 +47,16 @@ namespace APT
                 string text = Regex.Replace(searchResult, "\".*?\"", string.Empty);
                 string []text2 = text.Split(null);
                 text2 = text2.Where(x => !string.IsNullOrEmpty(x)).ToArray();
-                if (searchResult!="" && text2 != null)
+                try
                 {
-                    words = text2;
+                    if (searchResult != "" && text2[0] != "")
+                    {
+                        words = text2;
+                    }
+                }
+                catch
+                {
+                    words = null;
                 }
 
                 //STEM WORDS BEFORE SENDING NOT IMPLEMENTED!
