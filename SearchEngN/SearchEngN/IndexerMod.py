@@ -46,12 +46,8 @@ class Indexer:
             Result = self.DataBaseMaster.GetURLIDByStatus('C')
             if Result:
                 File_ID = int(Result[0][0]) 
-                #File_ID = '1'
-                FilePath = os.path.join(self.FilesLocation,str(File_ID) + '.html')
                 try:
-                    #HtmlData = open(FilePath,"r")
                     HtmlData = str(self.DataBaseMaster.GetHTMLdata(File_ID))
-                    l = len(HtmlData)
                 except:
                     print ("EXCEPTION IN FILE " + str(File_ID) + ", CANT OPEN: DELETEING FROM DATABASE!")
                     #self.DataBaseMaster.DeleteURLbyID(File_ID);
@@ -117,11 +113,6 @@ class Indexer:
 
         try:
             PageTitleTemp = MySoup.find('title').string
-            #if "'" in PageTitleTemp:
-            #    l = ["'", ]
-            #    for i in l:
-            #        if i in PageTitleTemp:
-            #            PageTitleTemp = PageTitleTemp.replace(i, '\''+i)
                 
             self.DataBaseMaster.UpdateURLTitle(URL_ID,PageTitleTemp);
             PageTitle = regex.sub(' ',PageTitleTemp)
@@ -152,7 +143,7 @@ class Indexer:
                         else:
                             Texts.append(j.string)
 
-        #self.ImageSearch(MySoup,URL_ID)        #UNCOMMENT TO CRAWL IMAGES
+        self.ImageSearch(MySoup,URL_ID)        #UNCOMMENT TO CRAWL IMAGES
         PageTitle = list(filter(None, PageTitle))
         Headers = list(filter(None, Headers))
         Texts = list(filter(None, Texts))

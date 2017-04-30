@@ -30,7 +30,7 @@
     <div class="container">
         <asp:PlaceHolder ID="LinksPlaceHolder" runat="server"></asp:PlaceHolder>
     </div>
-
+    <hr />
     <div class="row center-block text-center">
         <div class ="col-md-4"></div>               
         <div class ="col-md-1">

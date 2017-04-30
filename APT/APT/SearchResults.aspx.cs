@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Data;
+using System.Text.RegularExpressions;
 
 namespace APT
 {
@@ -20,27 +21,74 @@ namespace APT
                 Label_Data.Text = searchResult;
                 Textbox_Input.Text = searchResult;
                 string pageNumber = Request.QueryString["Page_Number"];
-                pageNum.InnerText = pageNumber;
-                if (pageNum.InnerText == "1")
-                {
-                    arrowLeft.Visible = false;
-                    arrowRight.HRef = "SearchImageResults.aspx?Textbox_Input=" + Label_Data.Text + "&Page_Number=2";
-                }
+                pageNum.InnerText = pageNumber;                
 
                 //Actual Data
                 if (searchResult == null)
                     return;
-                string[] words = searchResult.Split(null);
-                //STEM WORDS BEFORE SENDING NOT IMPLEMENTED!
-                controller = new Controller();
-                //DataTable dt = controller.querySearch(words);
-                DataTable dt = controller.phraseSearch(words);
-
-                
-
-                //Controls
-                for (int i = 0; i < words.Length; i++)
+                string phraseSearchWords = null;
+                string[] words = null;
+                string[] phraseWords = null;
+                //string[] words = searchResult.Split(null);
+                var reg = new Regex("\".*?\"");
+                var matches = reg.Matches(searchResult);
+                foreach (var item in matches)
                 {
+                    phraseSearchWords = item.ToString(); //take only first
+                    break;
+                }
+                if (phraseSearchWords != null)
+                {
+                    phraseSearchWords = phraseSearchWords.Replace('"', ' ').Trim();
+                    phraseWords = phraseSearchWords.Split(null);
+
+                }
+
+                string text = Regex.Replace(searchResult, "\".*?\"", string.Empty);
+                string []text2 = text.Split(null);
+                text2 = text2.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                if (searchResult!="" && text2 != null)
+                {
+                    words = text2;
+                }
+
+                //STEM WORDS BEFORE SENDING NOT IMPLEMENTED!
+
+
+                controller = new Controller();
+                DataTable dt = null;
+                int total = 0;
+                int currentStart = (Int32.Parse(pageNumber) - 1) * 10;
+
+
+                if (words != null && phraseWords == null)
+                {
+                    dt = controller.QuerySearch(words);
+                }
+                else if (phraseWords != null && words == null)
+                {
+                    dt = controller.PhraseSearch(phraseWords);
+                }
+                else if (words != null && phraseWords != null)
+                {
+                    dt = controller.CombinedSearch(words, phraseWords);
+                }
+                
+                if(dt==null)
+                {
+                    LinkUserControl link = Page.LoadControl("~/UserControls/LinkUserControl.ascx") as LinkUserControl;
+                    LinksPlaceHolder.Controls.Add(link);
+                    arrowLeft.Visible = false;
+                    arrowRight.Visible = false;
+                    return;
+                }
+
+                total = dt.Rows.Count;
+
+                for (int i = currentStart; i < currentStart + 10; i++)
+                {
+                    if (i > total - 1)
+                        break;
                     LinkUserControl link = Page.LoadControl("~/UserControls/LinkUserControl.ascx") as LinkUserControl;
                     if (link != null && dt != null)
                     {
@@ -48,10 +96,35 @@ namespace APT
                         link.LinkHyperLink = (dt.Rows[i][1]).ToString();
                     }
                     LinksPlaceHolder.Controls.Add(link);
-                    if (dt == null)
-                        break;
                 }
-               
+
+
+                //Handle arrow keys ASUUME ONE DATABALE dt
+                if (currentStart + 10 < total)
+                {
+                    arrowRight.Visible = true;
+                }
+                else
+                {
+                    arrowRight.Visible = false;
+                }
+                if (currentStart == 0)
+                {
+                    arrowLeft.Visible = false;
+                }
+                else
+                {
+                    arrowLeft.Visible = true;
+                }
+                arrowRight.HRef = "SearchResults.aspx?Textbox_Input=" + Label_Data.Text + "&Page_Number=" + (Int32.Parse(pageNumber) + 1);
+                arrowLeft.HRef = "SearchResults.aspx?Textbox_Input=" + Label_Data.Text + "&Page_Number=" + (Int32.Parse(pageNumber) - 1);
+
+
+
+
+
+
+
             }
         }
 

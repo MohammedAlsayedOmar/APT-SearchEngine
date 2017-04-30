@@ -16,7 +16,10 @@ namespace APT
         public string ImageLink1
         {
             get { return imageLink1.HRef; }
-            set { imageLink1.HRef = value; }
+            set {
+                imageLink1.HRef = value;
+                imageLink1.Title = value;
+            }
         }
         public string ImageSRC1
         {
@@ -27,7 +30,10 @@ namespace APT
         public string ImageLink2
         {
             get { return imageLink2.HRef; }
-            set { imageLink2.HRef = value; }
+            set {
+                imageLink2.HRef = value;
+                imageLink2.Title = value;
+            }
         }
         public string ImageSRC2
         {
@@ -38,7 +44,10 @@ namespace APT
         public string ImageLink3
         {
             get { return imageLink3.HRef; }
-            set { imageLink3.HRef = value; }
+            set {
+                imageLink3.HRef = value;
+                imageLink3.Title = value;
+            }
         }
         public string ImageSRC3
         {

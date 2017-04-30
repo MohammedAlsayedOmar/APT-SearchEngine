@@ -24,7 +24,17 @@ class DataBaseMaster:
             self.Curser.execute("update Url_Container set URL_Title='%s' where URL_ID = %d" % (title,URLID))
             self.Connector.commit()
         except:
-            self.Connector.rollback() 
+            try:
+                if "'" in title:
+                    l = ["'", ]
+                    for i in l:
+                        if i in title:
+                            title = title.replace(i, '\''+i)
+                           
+                self.Curser.execute("update Url_Container set URL_Title='%s' where URL_ID = %d" % (title,URLID))
+                self.Connector.commit()
+            except:
+                self.Connector.rollback() 
 
 
     def IncrementURLPopularity(self,URLID):
