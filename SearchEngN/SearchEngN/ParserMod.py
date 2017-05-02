@@ -5,6 +5,8 @@ import re
 import os
 import http
 import DataBase
+import string
+
 try:
     from itertools import imap
 except ImportError:
@@ -60,23 +62,27 @@ class Parser(HTMLParser):
         ThreadLock.acquire()
         Result = self.DataBaseMaster.GetURLID(Url)
         File_ID = int(Result[0][0]) 
-     
-        if self.DataBaseMaster.GetNumberOfUrlsInDB()[0][0] >= 5000:
-           return [],False,0,saveCompleted
-        self.feed(HtmlDecodedData)
-        if self.NOTENGLISHSITE == True:
-            return [],False,0,saveCompleted
 
-        dataToSave = str(self.HtmlData)
-        dataToSave = dataToSave.replace("\\n", ' ')
-        dataToSave = dataToSave.replace("\\t", ' ')
-        saveCompleted =  self.SaveHtmlToFile(dataToSave,File_ID)
+
+        dataToSave = str(self.HtmlData)     
+        gg = ' '.join(dataToSave.split())
+        gg = gg.replace('\\n',' ')
+        gg = gg.replace('\\t',' ')
+        gg = gg.replace('\\' , '')
+        saveCompleted =  self.SaveHtmlToFile(gg,File_ID)
         if saveCompleted == False:
             ThreadLock.release()
             return [],False,0,saveCompleted
+     
+        if self.DataBaseMaster.GetNumberOfUrlsInDB()[0][0] >= 5000:
+           ThreadLock.release()
+           return [],False,0,saveCompleted
+        self.feed(HtmlDecodedData)
+        if self.NOTENGLISHSITE == True:
+            ThreadLock.release()
+            return [],False,0,saveCompleted
+
         ThreadLock.release()
-
-
         SplittedHtml = re.split('"',HtmlDecodedData)
         for i in SplittedHtml:
             if str(i).startswith("http://") or str(i).startswith("https://"):
@@ -122,11 +128,9 @@ class Parser(HTMLParser):
 
     def SaveHtmlToFile(self,HtmlDecodedData,File_ID):
         self.DataBaseMaster.DeleteDataBeforeHTMLDATA(File_ID)
-        
-        HtmlDecodedData = HtmlDecodedData.replace("\\n", ' ')
-        HtmlDecodedData = HtmlDecodedData.replace("\\t", ' ')
+
         try:
-            htmlSlashed = str(self.HtmlData)
+            htmlSlashed = HtmlDecodedData
             l = ["'", ]
             for i in l:
                 if i in htmlSlashed:

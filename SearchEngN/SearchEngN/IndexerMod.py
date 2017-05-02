@@ -36,6 +36,7 @@ class Indexer:
         CurrentDirectory = os.path.dirname(os.path.realpath(__file__))
         HtmlFilesDirectory = 'MyImages'
         FilesLocation = os.path.join(CurrentDirectory, HtmlFilesDirectory)
+        FilesLocation = 'C:/Users/vedio_000/Documents/GithubTemp/APT-SearchEngine/APT/APT/Images/MyImages/'
         return FilesLocation
 
     def StartIndexing(self):
@@ -113,8 +114,10 @@ class Indexer:
 
         try:
             PageTitleTemp = MySoup.find('title').string
+            temp = PageTitleTemp.replace('\\' , '')
+            temp = temp.replace('\'' , '\'\'')
                 
-            self.DataBaseMaster.UpdateURLTitle(URL_ID,PageTitleTemp);
+            self.DataBaseMaster.UpdateURLTitle(URL_ID,temp);
             PageTitle = regex.sub(' ',PageTitleTemp)
             PageTitle = re.split('([\t\s\n\r])|x[a-zA-Z]*', PageTitle)
 

@@ -50,7 +50,7 @@ class Craweler:
                 for i in UrlsRetrived:
                     try:
                         if not self.MyDataBaseMaster.URLDoesExist(i):
-                            if self.MyDataBaseMaster.GetNumberOfUrlsInDB()[0][0] < 1000:
+                            if self.MyDataBaseMaster.GetNumberOfUrlsInDB()[0][0] < 5000:
                                 ThreadLock.acquire()
                                 self.MyDataBaseMaster.InsertNewUrl(i,'N',0,"")
                                 ThreadLock.release()
@@ -63,5 +63,7 @@ class Craweler:
                 if self.MyDataBaseMaster.GetNumberOfUrlsInDB()[0][0] <= 5000:
                     print (threading.current_thread().name+" ERROR in site: " + Url)
                     self.MyDataBaseMaster.UpdateURLStatusCrawler('E',Url)
+
             if saveCompleted:
                 self.MyDataBaseMaster.UpdateURLStatusCrawler('C',Url)
+                print (threading.current_thread().name+" Saved site: " + Url)
