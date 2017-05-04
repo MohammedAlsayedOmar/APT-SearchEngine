@@ -111,6 +111,22 @@ namespace APT
                 return null;
             }
         }
+
+        public int ExecuteReaderString(string query)
+        {
+            try
+            {
+                SqlCommand myCommand = new SqlCommand(query, myConnection);
+                SqlDataReader reader = myCommand.ExecuteReader();
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return 0;
+            }
+        }
+
         public object ExecuteScalar(string storedProcedureName, Dictionary<string, object> parameters)
         {
             try

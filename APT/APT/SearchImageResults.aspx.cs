@@ -18,12 +18,15 @@ namespace APT
         {
             if (!IsPostBack)
             {
+                controller = new Controller();
+
                 //Basic Search
                 string searchResult = Request.QueryString["Textbox_Input"];
                 Label_Data.Text = searchResult;
                 Textbox_Input.Text = searchResult;
                 string pageNumber = Request.QueryString["Page_Number"];
                 pageNum.InnerText = pageNumber;
+                controller.SearchHistory(searchResult);
 
                 //Actual Data
                 if (searchResult == null)
@@ -41,7 +44,6 @@ namespace APT
                 //STEM WORDS BEFORE SENDING NOT IMPLEMENTED!
 
 
-                controller = new Controller();
                 DataTable dt = null;
                 int total = 0;
                 int currentStart = (Int32.Parse(pageNumber) - 1) * 15;

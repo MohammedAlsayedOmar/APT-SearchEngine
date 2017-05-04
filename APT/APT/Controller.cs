@@ -14,10 +14,16 @@ namespace APT
             dbMan = new DBManager();
         }
 
-
         public void TerminateConnection()
         {
             dbMan.CloseConnection();
+        }
+
+        public int SearchHistory(string search)
+        {
+            search = search.Replace("'", "''");
+            string query = "insert into SearchHistory (SearchHistory) values ('" + search + "')";
+            return dbMan.ExecuteReaderString(query);
         }
 
         string oneWordQueryParagraph(string word)
