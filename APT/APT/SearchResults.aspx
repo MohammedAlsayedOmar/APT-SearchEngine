@@ -31,16 +31,16 @@
         <asp:PlaceHolder ID="LinksPlaceHolder" runat="server"></asp:PlaceHolder>
     </div>
     <hr />
-    <div class="row center-block text-center">
+   <div class="row center-block text-center">
         <div class ="col-md-4"></div>               
         <div class ="col-md-1">
-             <a id="arrowLeft" runat="server" class="glyphicon glyphicon-chevron-left"></a>
+            <asp:Button id="Btn_Left" runat="server" Text="<" BorderStyle="None" ForeColor="Blue" Font-Bold="true" Font-Size="Large" BackColor="Transparent" OnClick="Btn_Left_Click"></asp:Button>
         </div>
         <div class ="col-md-2">
             <p id="pageNum" runat="server"> 1 </p>
         </div>
         <div class ="col-md-1">
-            <a id="arrowRight" runat="server" class="glyphicon glyphicon-chevron-right"></a>
+            <asp:Button id="Btn_Right" runat="server" Text=">" BorderStyle="None" ForeColor="Blue" Font-Bold="true" Font-Size="Large" BackColor="Transparent" OnClick="Btn_Right_Click"></asp:Button>
         </div>
         <div class ="col-md-4"></div>
     </div>

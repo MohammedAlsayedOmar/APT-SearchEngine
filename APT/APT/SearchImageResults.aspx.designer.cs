@@ -67,13 +67,13 @@ namespace APT {
         protected global::System.Web.UI.WebControls.PlaceHolder ImagesPlaceHolder;
         
         /// <summary>
-        /// arrowLeft control.
+        /// Btn_Left control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor arrowLeft;
+        protected global::System.Web.UI.WebControls.Button Btn_Left;
         
         /// <summary>
         /// pageNum control.
@@ -85,12 +85,12 @@ namespace APT {
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl pageNum;
         
         /// <summary>
-        /// arrowRight control.
+        /// Btn_Right control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor arrowRight;
+        protected global::System.Web.UI.WebControls.Button Btn_Right;
     }
 }

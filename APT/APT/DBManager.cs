@@ -102,6 +102,7 @@ namespace APT
                 }
                 else
                 {
+                    reader.Close();
                     return null;
                 }
             }
@@ -118,6 +119,7 @@ namespace APT
             {
                 SqlCommand myCommand = new SqlCommand(query, myConnection);
                 SqlDataReader reader = myCommand.ExecuteReader();
+                reader.Close();
                 return 1;
             }
             catch (Exception ex)

@@ -12,6 +12,7 @@ namespace APT
     public partial class SearchResults : System.Web.UI.Page
     {
         Controller controller;
+        string pageNumber;
         protected void Page_Load(object sender, EventArgs e)
         {
             if(!IsPostBack)
@@ -22,10 +23,12 @@ namespace APT
                 string searchResult = Request.QueryString["Textbox_Input"];
                 Label_Data.Text = searchResult;
                 Textbox_Input.Text = searchResult;
-                string pageNumber = Request.QueryString["Page_Number"];
+                pageNumber = Request.QueryString["Page_Number"];
                 pageNum.InnerText = pageNumber;
-                controller.SearchHistory(searchResult);           
-                
+                if (searchResult != null)
+                {
+                    controller.SearchHistory(searchResult);
+                }
 
                 //Actual Data
                 if (searchResult == null)
@@ -88,8 +91,8 @@ namespace APT
                 {
                     LinkUserControl link = Page.LoadControl("~/UserControls/LinkUserControl.ascx") as LinkUserControl;
                     LinksPlaceHolder.Controls.Add(link);
-                    arrowLeft.Visible = false;
-                    arrowRight.Visible = false;
+                    Btn_Left.Visible = false;
+                    Btn_Right.Visible = false;
                     return;
                 }
 
@@ -109,32 +112,24 @@ namespace APT
                 }
 
 
+
                 //Handle arrow keys ASUUME ONE DATABALE dt
                 if (currentStart + 10 < total)
                 {
-                    arrowRight.Visible = true;
+                    Btn_Right.Visible = true;
                 }
                 else
                 {
-                    arrowRight.Visible = false;
+                    Btn_Right.Visible = false;
                 }
                 if (currentStart == 0)
                 {
-                    arrowLeft.Visible = false;
+                    Btn_Left.Visible = false;
                 }
                 else
                 {
-                    arrowLeft.Visible = true;
+                    Btn_Left.Visible = true;
                 }
-                arrowRight.HRef = "SearchResults.aspx?Textbox_Input=" + Label_Data.Text + "&Page_Number=" + (Int32.Parse(pageNumber) + 1);
-                arrowLeft.HRef = "SearchResults.aspx?Textbox_Input=" + Label_Data.Text + "&Page_Number=" + (Int32.Parse(pageNumber) - 1);
-
-
-
-
-
-
-
             }
         }
 
@@ -153,6 +148,20 @@ namespace APT
         protected void BtnSearchAgain_Click(object sender, EventArgs e)
         {
             Response.Redirect("SearchResults.aspx?Textbox_Input=" + Textbox_Input.Text + "&Page_Number=1");
+        }
+
+        protected void Btn_Right_Click(object sender, EventArgs e)
+        {
+            pageNumber = Request.QueryString["Page_Number"];
+            string RightLink = "SearchResults.aspx?Textbox_Input=" + Label_Data.Text + "&Page_Number=" + (Int32.Parse(pageNumber) + 1);
+            Response.Redirect(RightLink);
+        }
+
+        protected void Btn_Left_Click(object sender, EventArgs e)
+        {
+            pageNumber = Request.QueryString["Page_Number"];
+            string LeftLink = "SearchResults.aspx?Textbox_Input=" + Label_Data.Text + "&Page_Number=" + (Int32.Parse(pageNumber) - 1);
+            Response.Redirect(LeftLink);
         }
     }
 }

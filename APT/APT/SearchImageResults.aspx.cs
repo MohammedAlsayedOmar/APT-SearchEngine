@@ -13,6 +13,7 @@ namespace APT
     public partial class SearchImageResults : System.Web.UI.Page
     {
         Controller controller;
+        string pageNumber;
         const string imagesPath = "~/Images/MyImages/";
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -24,16 +25,19 @@ namespace APT
                 string searchResult = Request.QueryString["Textbox_Input"];
                 Label_Data.Text = searchResult;
                 Textbox_Input.Text = searchResult;
-                string pageNumber = Request.QueryString["Page_Number"];
+                pageNumber = Request.QueryString["Page_Number"];
                 pageNum.InnerText = pageNumber;
-                controller.SearchHistory(searchResult);
+                if (searchResult != null)
+                {
+                    controller.SearchHistory(searchResult);
+                }
 
                 //Actual Data
                 if (searchResult == null)
                     return;
                 string[] words = null;              
 
-                string text = Regex.Replace(searchResult, "\".*?\"", string.Empty);
+                string text = Regex.Replace(searchResult, "\"", string.Empty);
                 string[] text2 = text.Split(null);
                 text2 = text2.Where(x => !string.IsNullOrEmpty(x)).ToArray();
                 if (searchResult != "" && text2 != null)
@@ -58,8 +62,8 @@ namespace APT
                 {
                     LinkUserControl link = Page.LoadControl("~/UserControls/LinkUserControl.ascx") as LinkUserControl;
                     ImagesPlaceHolder.Controls.Add(link);
-                    arrowLeft.Visible = false;
-                    arrowRight.Visible = false;
+                    Btn_Left.Visible = false;
+                    Btn_Right.Visible = false;
                     return;
                 }
 
@@ -95,26 +99,20 @@ namespace APT
                 //Handle arrow keys ASUUME ONE DATABALE dt
                 if (currentStart + 15 < total)
                 {
-                    arrowRight.Visible = true;
+                    Btn_Right.Visible = true;
                 }
                 else
                 {
-                    arrowRight.Visible = false;
+                    Btn_Right.Visible = false;
                 }
                 if (currentStart == 0)
                 {
-                    arrowLeft.Visible = false;
+                    Btn_Left.Visible = false;
                 }
                 else
                 {
-                    arrowLeft.Visible = true;
+                    Btn_Left.Visible = true;
                 }
-                arrowRight.HRef = "SearchImageResults.aspx?Textbox_Input=" + Label_Data.Text + "&Page_Number=" + (Int32.Parse(pageNumber) + 1);
-                arrowLeft.HRef = "SearchImageResults.aspx?Textbox_Input=" + Label_Data.Text + "&Page_Number=" + (Int32.Parse(pageNumber) - 1);
-
-
-
-
             }
         }
 
@@ -133,6 +131,20 @@ namespace APT
         protected void BtnSearchAgain_Click(object sender, EventArgs e)
         {
             Response.Redirect("SearchImageResults.aspx?Textbox_Input=" + Textbox_Input.Text + "&Page_Number=1");
+        }
+
+        protected void Btn_Right_Click(object sender, EventArgs e)
+        {
+            pageNumber = Request.QueryString["Page_Number"];
+            string RightLink = "SearchImageResults.aspx?Textbox_Input=" + Label_Data.Text + "&Page_Number=" + (Int32.Parse(pageNumber) + 1);
+            Response.Redirect(RightLink);
+        }
+
+        protected void Btn_Left_Click(object sender, EventArgs e)
+        {
+            pageNumber = Request.QueryString["Page_Number"];
+            string LeftLink = "SearchImageResults.aspx?Textbox_Input=" + Label_Data.Text + "&Page_Number=" + (Int32.Parse(pageNumber) - 1);
+            Response.Redirect(LeftLink);
         }
     }
 }
