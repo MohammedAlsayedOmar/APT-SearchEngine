@@ -6,6 +6,7 @@ Search Engine using Python, ASP.NET, HTML, SQL Server, and C# created by [Ahmad 
 The work is still **in progress** but you can test it on your computer.
 
 ## Prerequisite 
+* [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads)
 * IDE such as [Visual Studio](https://www.visualstudio.com/downloads/)
 * Host for a local server such as [ISS Express](https://www.microsoft.com/en-us/download/details.aspx?id=48264)
 * [Python 3.X](https://www.python.org/downloads/) and the [Natural Language Toolkit Package](http://www.nltk.org/install.html)
