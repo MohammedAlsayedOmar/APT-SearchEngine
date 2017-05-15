@@ -318,16 +318,16 @@ namespace APT
                     innerQueryHeaderBeforeJoin += "and ";
                 }
             }
-            if (words.Length > 1)
-                innerQueryHeaderBeforeJoin += "and ";
-            for (int i = 1; i < words.Length; i++)
-            {
-                innerQueryHeaderBeforeJoin += WhereSpecialPhraseSearchClause(i);
-                if (words.Length > 1 && i != words.Length - 1)
-                {
-                    innerQueryHeaderBeforeJoin += "and ";
-                }
-            }
+            //if (words.Length > 1)
+            //    innerQueryHeaderBeforeJoin += "and ";
+            //for (int i = 1; i < words.Length; i++)
+            //{
+            //    innerQueryHeaderBeforeJoin += WhereSpecialPhraseSearchClause(i);
+            //    if (words.Length > 1 && i != words.Length - 1)
+            //    {
+            //        innerQueryHeaderBeforeJoin += "and ";
+            //    }
+            //}
 
             string innerQueryHeaders = "select a.URL_ID,a.URLName,a.URL_Title,a.TotalNumberOfWords, total = ( ";
             for (int i = 0; i < words.Length; i++)
@@ -380,16 +380,16 @@ namespace APT
                     innerQueryParagraphsBeforeJoin += "and ";
                 }
             }
-            if (words.Length > 1)
-                innerQueryParagraphsBeforeJoin += "and ";
-            for (int i = 1; i < words.Length; i++)
-            {
-                innerQueryParagraphsBeforeJoin += WhereSpecialPhraseSearchClause(i);
-                if (words.Length > 1 && i != words.Length - 1)
-                {
-                    innerQueryParagraphsBeforeJoin += "and ";
-                }
-            }
+            //if (words.Length > 1)
+            //    innerQueryParagraphsBeforeJoin += "and ";
+            //for (int i = 1; i < words.Length; i++)
+            //{
+            //    innerQueryParagraphsBeforeJoin += WhereSpecialPhraseSearchClause(i);
+            //    if (words.Length > 1 && i != words.Length - 1)
+            //    {
+            //        innerQueryParagraphsBeforeJoin += "and ";
+            //    }
+            //}
 
             string innerQueryParagraphs = "select a.URL_ID,a.URLName,a.URL_Title,a.TotalNumberOfWords, total = ( ";
             for (int i = 0; i < words.Length; i++)
@@ -427,6 +427,32 @@ namespace APT
             return dbMan.ExecuteReader(FinalQuery);
         }
 
+
+        string JoinsPhrase(string KWP_TableName, string[] words, int letterIndex)
+        {
+            //genereta 7aga zai el inner da bs replace kam 7aga kda
+            return "";
+        }
+        public DataTable RankedPhraseSearch(string[] words)
+        {
+
+/*
+left join
+(select url0.URL_ID ,count(kwp_t0.ID) as word 
+from 
+KeyWords w0,KeyWordsPosition_Paragraphs kwp_t0, Url_Container url0 , 
+KeyWords w1,KeyWordsPosition_Paragraphs kwp_t1, Url_Container url1 
+where
+w0.KeyWords = 'the' and w0.KeyWord_ID = kwp_t0.KeyWord_ID and kwp_t0.URL_ID = url0.URL_ID and
+w1.KeyWords='seo' and w1.KeyWord_ID = kwp_t1.KeyWord_ID and kwp_t1.URL_ID = url1.URL_ID and
+url0.URL_ID = url1.URL_ID and
+kwp_t1.Position = kwp_t0.Position+1
+group by url0.URL_ID) c on bla bla      
+*/
+            DataTable dy = null;
+            return dy;
+        }
+ 
 
     }
 }
