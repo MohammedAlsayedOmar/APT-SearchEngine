@@ -76,7 +76,7 @@ namespace APT
 
                 if (words != null && phraseWords == null)
                 {
-                    dt = controller.QuerySearch(words);
+                    dt = controller.RankedQuerySearch(words);
                 }
                 else if (phraseWords != null && words == null)
                 {
