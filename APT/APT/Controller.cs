@@ -231,13 +231,13 @@ namespace APT
             return returned;
         }
 
-        public DataTable RankedQuerySearch(string[] words)
+        string RankedQuerySearchQuery(string[] words)
         {
             const int TitleFactor = 10, HeaderFactor = 5, ParaFactor = 1;
 
 
             //TITLE
-            string innerQueryTitleBeforeJoin = "select DISTINCT url0.URL_ID,url0.URLName ,url0.URL_Title, url0.TotalNumberOfWords from ";
+            string innerQueryTitleBeforeJoin = "select DISTINCT url0.URL_ID,url0.URLName ,url0.URL_Title, url0.TotalNumberOfWords, url0.Frequency from ";
             //1
             for (int i = 0; i < words.Length; i++)
             {
@@ -279,6 +279,7 @@ namespace APT
             }
 
             innerQueryTitle += ") * " + TitleFactor.ToString();
+            innerQueryTitle += "+ a.Frequency ";
             innerQueryTitle += " from (( ";
             innerQueryTitle += innerQueryTitleBeforeJoin;
             innerQueryTitle += " ) a ";
@@ -286,7 +287,7 @@ namespace APT
             {
                 innerQueryTitle += Joins("KeyWordsPosition_Titles", words[i], i + 1);
             }
-            innerQueryTitle += ") where ";
+            innerQueryTitle += ") where a.TotalNumberOfWords > 1 and ";
             for (int i = 0; i < words.Length; i++)
             {
                 innerQueryTitle += JoinsWhereClause(words[i], i + 1);
@@ -299,7 +300,7 @@ namespace APT
 
 
             //HEADERS
-            string innerQueryHeaderBeforeJoin = "select DISTINCT url0.URL_ID,url0.URLName ,url0.URL_Title, url0.TotalNumberOfWords from ";
+            string innerQueryHeaderBeforeJoin = "select DISTINCT url0.URL_ID,url0.URLName ,url0.URL_Title, url0.TotalNumberOfWords, url0.Frequency from "; 
             //2
             for (int i = 0; i < words.Length; i++)
             {
@@ -341,6 +342,7 @@ namespace APT
             }
 
             innerQueryHeaders += ") * " + HeaderFactor.ToString();
+            innerQueryHeaders += "+ a.Frequency ";
             innerQueryHeaders += " from (( ";
             innerQueryHeaders += innerQueryHeaderBeforeJoin;
             innerQueryHeaders += " ) a ";
@@ -348,7 +350,7 @@ namespace APT
             {
                 innerQueryHeaders += Joins("KeyWordsPosition_Headers", words[i], i + 1);
             }
-            innerQueryHeaders += ") where ";
+            innerQueryHeaders += ") where a.TotalNumberOfWords > 1 and ";
             for (int i = 0; i < words.Length; i++)
             {
                 innerQueryHeaders += JoinsWhereClause(words[i], i + 1);
@@ -361,7 +363,7 @@ namespace APT
 
 
             //PARAGRAPHS
-            string innerQueryParagraphsBeforeJoin = "select DISTINCT url0.URL_ID,url0.URLName ,url0.URL_Title, url0.TotalNumberOfWords from ";
+            string innerQueryParagraphsBeforeJoin = "select DISTINCT url0.URL_ID,url0.URLName ,url0.URL_Title, url0.TotalNumberOfWords, url0.Frequency from "; 
             //3
             for (int i = 0; i < words.Length; i++)
             {
@@ -380,16 +382,16 @@ namespace APT
                     innerQueryParagraphsBeforeJoin += "and ";
                 }
             }
-            //if (words.Length > 1)
-            //    innerQueryParagraphsBeforeJoin += "and ";
-            //for (int i = 1; i < words.Length; i++)
-            //{
-            //    innerQueryParagraphsBeforeJoin += WhereSpecialPhraseSearchClause(i);
-            //    if (words.Length > 1 && i != words.Length - 1)
-            //    {
-            //        innerQueryParagraphsBeforeJoin += "and ";
-            //    }
-            //}
+            if (words.Length > 1)
+                innerQueryParagraphsBeforeJoin += "and ";
+            for (int i = 1; i < words.Length; i++)
+            {
+                innerQueryParagraphsBeforeJoin += WhereSpecialPhraseSearchClause(i);
+                if (words.Length > 1 && i != words.Length - 1)
+                {
+                    innerQueryParagraphsBeforeJoin += "and ";
+                }
+            }
 
             string innerQueryParagraphs = "select a.URL_ID,a.URLName,a.URL_Title,a.TotalNumberOfWords, total = ( ";
             for (int i = 0; i < words.Length; i++)
@@ -403,6 +405,7 @@ namespace APT
             }
 
             innerQueryParagraphs += ") * " + ParaFactor.ToString();
+            innerQueryParagraphs += "+ a.Frequency ";
             innerQueryParagraphs += " from (( ";
             innerQueryParagraphs += innerQueryParagraphsBeforeJoin;
             innerQueryParagraphs += " ) a ";
@@ -410,7 +413,7 @@ namespace APT
             {
                 innerQueryParagraphs += Joins("KeyWordsPosition_Paragraphs", words[i], i + 1);
             }
-            innerQueryParagraphs += ") where ";
+            innerQueryParagraphs += ") where a.TotalNumberOfWords > 1 and ";
             for (int i = 0; i < words.Length; i++)
             {
                 innerQueryParagraphs += JoinsWhereClause(words[i], i + 1);
@@ -423,8 +426,7 @@ namespace APT
 
 
 
-            string FinalQuery = "select distinct URL_ID,URLName, URL_Title, total = sum(total) from( " + innerQueryTitle + " union all " + innerQueryHeaders + " union all " + innerQueryParagraphs + " )t group by URL_ID,URLName, URL_Title order by total desc";
-            return dbMan.ExecuteReader(FinalQuery);
+           return "select distinct URL_ID,URLName, URL_Title, total = sum(total) from( " + innerQueryTitle + " union all " + innerQueryHeaders + " union all " + innerQueryParagraphs + " )t group by URL_ID,URLName, URL_Title order by total desc";        
         }
 
 
@@ -433,26 +435,197 @@ namespace APT
             //genereta 7aga zai el inner da bs replace kam 7aga kda
             return "";
         }
+        string RankedPhraseSearchQuery(string[] words)
+        {
+            const int TitleFactor = 10, HeaderFactor = 5, ParaFactor = 1;
+
+            //TITLE
+            string innerQueryTitleBeforeJoin = "select DISTINCT url0.URL_ID,url0.URLName ,url0.URL_Title, url0.TotalNumberOfWords, url0.Frequency from ";
+            string innerQueryTitleJoin = "left join (select url0.URL_ID ,count(kwp_t0.ID) as word from ";
+            //1
+            for (int i = 0; i < words.Length; i++)
+            {
+                innerQueryTitleBeforeJoin += FromClasuePhraseSearch("KeyWordsPosition_Titles", i);
+                innerQueryTitleJoin += FromClasuePhraseSearch("KeyWordsPosition_Titles", i);
+                if (words.Length > 1 && i != words.Length - 1)
+                {
+                    innerQueryTitleBeforeJoin += ", ";
+                    innerQueryTitleJoin += ", ";
+                }
+            }
+            innerQueryTitleBeforeJoin += "where ";
+            innerQueryTitleJoin += "where ";
+            for (int i = 0; i < words.Length; i++)
+            {
+                innerQueryTitleBeforeJoin += WhereClasuePhraseSearch(words[i], i);
+                innerQueryTitleJoin += WhereClasuePhraseSearch(words[i], i);
+                if (words.Length > 1 && i != words.Length - 1)
+                {
+                    innerQueryTitleBeforeJoin += "and ";
+                    innerQueryTitleJoin += "and ";
+                }
+            }
+            if (words.Length > 1)
+            {
+                innerQueryTitleBeforeJoin += "and ";
+                innerQueryTitleJoin += "and ";
+            }
+            for (int i = 1; i < words.Length; i++)
+            {
+                innerQueryTitleBeforeJoin += WhereSpecialPhraseSearchClause(i);
+                innerQueryTitleJoin += WhereSpecialPhraseSearchClause(i);
+                if (words.Length > 1 && i != words.Length - 1)
+                {
+                    innerQueryTitleBeforeJoin += "and ";
+                    innerQueryTitleJoin += "and ";
+                }
+            }
+            innerQueryTitleJoin += "group by url0.URL_ID) b on a.URL_ID = b.URL_ID ";
+            string innerQueryTitle = "select a.URL_ID,a.URLName,a.URL_Title,a.TotalNumberOfWords, total = ( b.word ";
+
+            innerQueryTitle += ") * " + TitleFactor.ToString();
+            innerQueryTitle += "+ a.Frequency ";
+            innerQueryTitle += " from (( ";
+            innerQueryTitle += innerQueryTitleBeforeJoin;
+            innerQueryTitle += " ) a ";
+            innerQueryTitle += innerQueryTitleJoin;
+
+            innerQueryTitle += ") where a.TotalNumberOfWords > 1 and cast(b.word as float) / cast(a.TotalNumberOfWords as float) < 0.5 ";
+
+            //Header
+            string innerQueryHeaderBeforeJoin = "select DISTINCT url0.URL_ID,url0.URLName ,url0.URL_Title, url0.TotalNumberOfWords, url0.Frequency from "; 
+            string innerQueryHeaderJoin = "left join (select url0.URL_ID ,count(kwp_t0.ID) as word from ";
+            //2
+            for (int i = 0; i < words.Length; i++)
+            {
+                innerQueryHeaderBeforeJoin += FromClasuePhraseSearch("KeyWordsPosition_Headers", i);
+                innerQueryHeaderJoin += FromClasuePhraseSearch("KeyWordsPosition_Headers", i);
+                if (words.Length > 1 && i != words.Length - 1)
+                {
+                    innerQueryHeaderBeforeJoin += ", ";
+                    innerQueryHeaderJoin += ", ";
+                }
+            }
+            innerQueryHeaderBeforeJoin += "where ";
+            innerQueryHeaderJoin += "where ";
+            for (int i = 0; i < words.Length; i++)
+            {
+                innerQueryHeaderBeforeJoin += WhereClasuePhraseSearch(words[i], i);
+                innerQueryHeaderJoin += WhereClasuePhraseSearch(words[i], i);
+                if (words.Length > 1 && i != words.Length - 1)
+                {
+                    innerQueryHeaderBeforeJoin += "and ";
+                    innerQueryHeaderJoin += "and ";
+                }
+            }
+            if (words.Length > 1)
+            {
+                innerQueryHeaderBeforeJoin += "and ";
+                innerQueryHeaderJoin += "and ";
+            }
+            for (int i = 1; i < words.Length; i++)
+            {
+                innerQueryHeaderBeforeJoin += WhereSpecialPhraseSearchClause(i);
+                innerQueryHeaderJoin += WhereSpecialPhraseSearchClause(i);
+                if (words.Length > 1 && i != words.Length - 1)
+                {
+                    innerQueryHeaderBeforeJoin += "and ";
+                    innerQueryHeaderJoin += "and ";
+                }
+            }
+            innerQueryHeaderJoin += "group by url0.URL_ID) b on a.URL_ID = b.URL_ID ";
+            string innerQueryHeader = "select a.URL_ID,a.URLName,a.URL_Title,a.TotalNumberOfWords, total = ( b.word ";
+
+            innerQueryHeader += ") * " + HeaderFactor.ToString();
+            innerQueryHeader += "+ a.Frequency ";
+            innerQueryHeader += " from (( ";
+            innerQueryHeader += innerQueryHeaderBeforeJoin;
+            innerQueryHeader += " ) a ";
+            innerQueryHeader += innerQueryHeaderJoin;
+
+            innerQueryHeader += ") where a.TotalNumberOfWords > 1 and cast(b.word as float) / cast(a.TotalNumberOfWords as float) < 0.5 ";
+
+
+            //Paragraph
+            string innerQueryParagraphBeforeJoin = "select DISTINCT url0.URL_ID,url0.URLName ,url0.URL_Title, url0.TotalNumberOfWords, url0.Frequency from ";
+            string innerQueryParagraphJoin = "left join (select url0.URL_ID ,count(kwp_t0.ID) as word from ";
+            //3
+            for (int i = 0; i < words.Length; i++)
+            {
+                innerQueryParagraphBeforeJoin += FromClasuePhraseSearch("KeyWordsPosition_Paragraphs", i);
+                innerQueryParagraphJoin += FromClasuePhraseSearch("KeyWordsPosition_Paragraphs", i);
+                if (words.Length > 1 && i != words.Length - 1)
+                {
+                    innerQueryParagraphBeforeJoin += ", ";
+                    innerQueryParagraphJoin += ", ";
+                }
+            }
+            innerQueryParagraphBeforeJoin += "where ";
+            innerQueryParagraphJoin += "where ";
+            for (int i = 0; i < words.Length; i++)
+            {
+                innerQueryParagraphBeforeJoin += WhereClasuePhraseSearch(words[i], i);
+                innerQueryParagraphJoin += WhereClasuePhraseSearch(words[i], i);
+                if (words.Length > 1 && i != words.Length - 1)
+                {
+                    innerQueryParagraphBeforeJoin += "and ";
+                    innerQueryParagraphJoin += "and ";
+                }
+            }
+            if (words.Length > 1)
+            {
+                innerQueryParagraphBeforeJoin += "and ";
+                innerQueryParagraphJoin += "and ";
+            }
+            for (int i = 1; i < words.Length; i++)
+            {
+                innerQueryParagraphBeforeJoin += WhereSpecialPhraseSearchClause(i);
+                innerQueryParagraphJoin += WhereSpecialPhraseSearchClause(i);
+                if (words.Length > 1 && i != words.Length - 1)
+                {
+                    innerQueryParagraphBeforeJoin += "and ";
+                    innerQueryParagraphJoin += "and ";
+                }
+            }
+            innerQueryParagraphJoin += "group by url0.URL_ID) b on a.URL_ID = b.URL_ID ";
+            string innerQueryParagraph = "select a.URL_ID,a.URLName,a.URL_Title,a.TotalNumberOfWords, total = ( b.word ";
+
+            innerQueryParagraph += ") * " + ParaFactor.ToString();
+            innerQueryParagraph += "+ a.Frequency ";
+
+            innerQueryParagraph += " from (( ";
+            innerQueryParagraph += innerQueryParagraphBeforeJoin;
+            innerQueryParagraph += " ) a ";
+            innerQueryParagraph += innerQueryParagraphJoin;
+
+            innerQueryParagraph += ") where a.TotalNumberOfWords > 1 and cast(b.word as float) / cast(a.TotalNumberOfWords as float) < 0.5 ";
+
+            return "select distinct URL_ID,URLName, URL_Title, total = sum(total) from( " + innerQueryTitle + " union all " + innerQueryHeader + " union all " + innerQueryParagraph + " )t group by URL_ID,URLName, URL_Title order by total desc";         
+        }
+
+        public DataTable RankedQuerySearch(string[] words)
+        {
+            string query = RankedQuerySearchQuery(words);
+            return dbMan.ExecuteReader(query);
+        }
+
+
         public DataTable RankedPhraseSearch(string[] words)
         {
-
-/*
-left join
-(select url0.URL_ID ,count(kwp_t0.ID) as word 
-from 
-KeyWords w0,KeyWordsPosition_Paragraphs kwp_t0, Url_Container url0 , 
-KeyWords w1,KeyWordsPosition_Paragraphs kwp_t1, Url_Container url1 
-where
-w0.KeyWords = 'the' and w0.KeyWord_ID = kwp_t0.KeyWord_ID and kwp_t0.URL_ID = url0.URL_ID and
-w1.KeyWords='seo' and w1.KeyWord_ID = kwp_t1.KeyWord_ID and kwp_t1.URL_ID = url1.URL_ID and
-url0.URL_ID = url1.URL_ID and
-kwp_t1.Position = kwp_t0.Position+1
-group by url0.URL_ID) c on bla bla      
-*/
-            DataTable dy = null;
-            return dy;
+            string query = RankedPhraseSearchQuery(words);
+            return dbMan.ExecuteReader(query);
         }
- 
+
+
+        public DataTable CombinedRankedSearch(string[] words, string[] phrases)
+        {
+            string normalSearch = RankedQuerySearchQuery(words);
+            string phraseSearch = RankedPhraseSearchQuery(phrases);
+            string query = "select URL_ID, URLName, URL_Title, total = sum(total) from( " + normalSearch + " union all " + phraseSearch + " )t";
+            query = query.Replace("order by total desc", "");
+            query += " group by URL_ID, URLName, URL_Title order by total desc";
+            return dbMan.ExecuteReader(query);
+        }
 
     }
 }

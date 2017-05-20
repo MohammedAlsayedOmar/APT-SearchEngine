@@ -18,24 +18,39 @@ import time
 #MyCraweler.Crawel("https://docs.python.org/3/library/re.html")
 
 threadLock = threading.Lock()
+threadLockIndexer = threading.Lock()
 MyThreads = []
-ThreadNumber = input('Enter number of threads: ')
+CrawlerThreadNumber = input('Enter number of Crawler threads: ')
+IndexerThreadNumber = input('Enter number of Indexer threads: ')
 # Create new threads
 
 
-for i in range(int(ThreadNumber)):
+for i in range(int(CrawlerThreadNumber)):
     try:
        MyThreads.append(ThreadingMod.myThread(1, "Thread-"+str(i+1), 1,threadLock,'C'))
     except:
        print("Error: unable to start new thread")
 
-MyThreads.append(ThreadingMod.myThread(1, "Thread-Indexer", 1,threadLock,'I'))
-MyThreads.append(ThreadingMod.myThread(1, "Thread-Q Saver", 1,threadLock,'Q'))
+for i in range(int(IndexerThreadNumber)):
+    try:
+       MyThreads.append(ThreadingMod.myThread(1, "Thread-Indexer-"+str(i+1), 1,threadLockIndexer,'I'))
+    except:
+       print("Error: unable to start new thread")
 
-MyThreads[int(ThreadNumber)+1].start() #Start 1 before the others
-time.sleep(1)
-for i in range(int(ThreadNumber)+1):
-    MyThreads[i].start()
+MyThreads.append(ThreadingMod.myThread(1, "Thread-Q Saver", 1,threadLock,'Q'))
+MyThreads.append(ThreadingMod.myThread(1, "Thread-Indexer Saver", 1,threadLockIndexer,'W'))
+
+MyThreads[int(CrawlerThreadNumber) + int(IndexerThreadNumber)    ].start() #Start CralwerSaver before the others
+MyThreads[int(CrawlerThreadNumber) + int(IndexerThreadNumber) + 1].start() #Start IndexerSaver before the others
+
+time.sleep(2)
+
+#for i in range(int(CrawlerThreadNumber) + int(IndexerThreadNumber) -2):
+#    MyThreads[i].start()
+
+for i in MyThreads:
+    if not ((i.name == "Thread-Q Saver") | (i.name == "Thread-Indexer Saver")):
+        i.start()
 
 
 # Wait for all threads to complete

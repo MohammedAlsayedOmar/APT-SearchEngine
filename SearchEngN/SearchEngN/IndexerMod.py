@@ -4,6 +4,8 @@ import urllib.request
 from bs4 import *
 import os
 import re
+import threading
+import time
 
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, module='bs4')
@@ -39,73 +41,100 @@ class Indexer:
         FilesLocation = 'C:/Users/vedio_000/Documents/GithubTemp/APT-SearchEngine/APT/APT/Images/MyImages/'
         return FilesLocation
 
-    def StartIndexing(self):
-        while True :
-            Position = 0
-            TitlePosition=0
-            HeaderPosition =0
+    def StartIndexingSaver(self, ThreadLock):
+         ThreadLock.acquire()
+         Result = self.DataBaseMaster.GetURLIDByStatus('W')
+         ThreadLock.release()
+         if Result:
+            for i in range(len(Result)):
+                File_ID = int(Result[i][0]) 
+                self.IndexerMechanism(ThreadLock, File_ID)
+         print("Thread-Indexer Saver Leaving")
+
+    def StartIndexing(self, ThreadLock):
+        while True:
+            File_ID = -1;
+            ThreadLock.acquire()
             Result = self.DataBaseMaster.GetURLIDByStatus('C')
+
             if Result:
                 File_ID = int(Result[0][0]) 
-                try:
-                    HtmlData = str(self.DataBaseMaster.GetHTMLdata(File_ID))
-                except:
-                    print ("EXCEPTION IN FILE " + str(File_ID) + ", CANT OPEN: DELETEING FROM DATABASE!")
-                    #self.DataBaseMaster.DeleteURLbyID(File_ID);
-                    self.DataBaseMaster.UpdateURLStatus('D',File_ID)
-                    continue
-                #HtmlData = HtmlData.replace('class="srow bigbox container mi-df-local locked-single"', 'class="row bigbox container mi-df-local single-local"') #K
-                #HtmlData = open("1.txt","r")
-                Title ,Headers, Paragraphs = self.GetTextFromHtml(HtmlData, File_ID)
-                if Title == []:
-                    continue
-                self.DataBaseMaster.DeleteDataBeforeIndexing(File_ID)
+                self.DataBaseMaster.UpdateURLStatus('W', File_ID)
+            ThreadLock.release()
 
-                for word in Title:
-                    word = word.lower()
-                    #if word not in self.StoppingWords:
-                    if word not in self.IDKWhatToNameThisButTheseAreTheWordsIDKWhatToDoAboutThanksForReading:
-                        stemedWord = self.lemma.lemmatize(word)
-                        if not self.DataBaseMaster.KeyWordDoesExist(stemedWord):
-                            self.DataBaseMaster.InsertKeyWord(stemedWord)
-                        Result2 = self.DataBaseMaster.GetWordID(stemedWord)
-                        Word_ID = int(Result2[0][0])
-                        self.DataBaseMaster.InsertKeyWordPositionTitle(File_ID,Word_ID,TitlePosition)
-                        TitlePosition = TitlePosition + 1
-
-                for word in Headers:
-                    word = word.lower()
-                    #if word not in self.StoppingWords:
-                    if word not in self.IDKWhatToNameThisButTheseAreTheWordsIDKWhatToDoAboutThanksForReading:
-                        stemedWord = self.lemma.lemmatize(word)
-                        if not self.DataBaseMaster.KeyWordDoesExist(stemedWord):
-                            self.DataBaseMaster.InsertKeyWord(stemedWord)
-                        Result2 = self.DataBaseMaster.GetWordID(stemedWord)
-                        Word_ID = int(Result2[0][0])
-                        self.DataBaseMaster.InsertKeyWordPositionHeaders(File_ID,Word_ID,HeaderPosition)
-                        HeaderPosition = HeaderPosition + 1
-
-                for word in Paragraphs:
-                    word = word.lower()
-                    #if word not in self.StoppingWords:
-                    if word not in self.IDKWhatToNameThisButTheseAreTheWordsIDKWhatToDoAboutThanksForReading:
-                        stemedWord = self.lemma.lemmatize(word)
-                        if not self.DataBaseMaster.KeyWordDoesExist(stemedWord):
-                            self.DataBaseMaster.InsertKeyWord(stemedWord)
-                        Result2 = self.DataBaseMaster.GetWordID(stemedWord)
-                        Word_ID = int(Result2[0][0])
-                        self.DataBaseMaster.InsertKeyWordPositionParagraph(File_ID,Word_ID,Position)
-                        Position = Position + 1
-
-                totalNumberOfWords = Position+HeaderPosition+TitlePosition
-                self.DataBaseMaster.UpdateNumberOfWords(File_ID,totalNumberOfWords)
-                self.DataBaseMaster.UpdateURLStatus('I', File_ID)
-                print("INDEXED FILE: " + str(File_ID))
-            #else :
-                #print("FINISHED ALL THE SITES PLEASE ADD MORE")
+            if File_ID != -1:
+                 self.IndexerMechanism(ThreadLock,File_ID)
 
 
-    def GetTextFromHtml(self,HtmlData, URL_ID):
+    def IndexerMechanism(self, ThreadLock, File_ID):
+        Position = 0
+        TitlePosition=0
+        HeaderPosition =0  
+           
+        try:
+            HtmlData = str(self.DataBaseMaster.GetHTMLdata(File_ID))
+        except:
+            print ("EXCEPTION IN FILE " + str(File_ID) + ", CANT OPEN: DELETEING FROM DATABASE!")
+            #self.DataBaseMaster.DeleteURLbyID(File_ID);
+            self.DataBaseMaster.UpdateURLStatus('D',File_ID)
+            return
+
+        self.DataBaseMaster.DeleteDataBeforeIndexing(File_ID)
+        Title ,Headers, Paragraphs = self.GetTextFromHtml(HtmlData, File_ID, ThreadLock)
+        if Title == []:
+            return
+                
+        for word in Title:
+            word = word.lower()
+            #if word not in self.StoppingWords:
+            if word not in self.IDKWhatToNameThisButTheseAreTheWordsIDKWhatToDoAboutThanksForReading:
+                stemedWord = self.lemma.lemmatize(word)
+                ThreadLock.acquire()
+                if not self.DataBaseMaster.KeyWordDoesExist(stemedWord):
+                    self.DataBaseMaster.InsertKeyWord(stemedWord)
+                ThreadLock.release()
+                Result2 = self.DataBaseMaster.GetWordID(stemedWord)
+                Word_ID = int(Result2[0][0])
+                self.DataBaseMaster.InsertKeyWordPositionTitle(File_ID,Word_ID,TitlePosition)
+                TitlePosition = TitlePosition + 1
+
+        for word in Headers:
+            word = word.lower()
+            #if word not in self.StoppingWords:
+            if word not in self.IDKWhatToNameThisButTheseAreTheWordsIDKWhatToDoAboutThanksForReading:
+                stemedWord = self.lemma.lemmatize(word)
+                ThreadLock.acquire()
+                if not self.DataBaseMaster.KeyWordDoesExist(stemedWord):
+                    self.DataBaseMaster.InsertKeyWord(stemedWord)
+                ThreadLock.release()
+                Result2 = self.DataBaseMaster.GetWordID(stemedWord)
+                Word_ID = int(Result2[0][0])
+                self.DataBaseMaster.InsertKeyWordPositionHeaders(File_ID,Word_ID,HeaderPosition)
+                HeaderPosition = HeaderPosition + 1
+
+        for word in Paragraphs:
+            word = word.lower()
+            #if word not in self.StoppingWords:
+            if word not in self.IDKWhatToNameThisButTheseAreTheWordsIDKWhatToDoAboutThanksForReading:
+                stemedWord = self.lemma.lemmatize(word)
+                ThreadLock.acquire()
+                if not self.DataBaseMaster.KeyWordDoesExist(stemedWord):
+                    self.DataBaseMaster.InsertKeyWord(stemedWord)
+                ThreadLock.release()
+                Result2 = self.DataBaseMaster.GetWordID(stemedWord)
+                Word_ID = int(Result2[0][0])
+                self.DataBaseMaster.InsertKeyWordPositionParagraph(File_ID,Word_ID,Position)
+                Position = Position + 1
+
+        totalNumberOfWords = Position+HeaderPosition+TitlePosition
+        self.DataBaseMaster.UpdateNumberOfWords(File_ID,totalNumberOfWords)
+        self.DataBaseMaster.UpdateURLStatus('I', File_ID)
+        print(threading.current_thread().name + " INDEXED FILE: " + str(File_ID))
+    #else :
+        #print("FINISHED ALL THE SITES PLEASE ADD MORE")
+
+
+    def GetTextFromHtml(self,HtmlData, URL_ID,ThreadLock):
         MySoup =  BeautifulSoup(HtmlData)
         PageTitle=[]
         Texts = []
@@ -146,7 +175,7 @@ class Indexer:
                         else:
                             Texts.append(j.string)
 
-        self.ImageSearch(MySoup,URL_ID)        #UNCOMMENT TO CRAWL IMAGES
+        self.ImageSearch(MySoup,URL_ID,ThreadLock)        #UNCOMMENT TO CRAWL IMAGES
         PageTitle = list(filter(None, PageTitle))
         Headers = list(filter(None, Headers))
         Texts = list(filter(None, Texts))
@@ -154,7 +183,7 @@ class Indexer:
 
 
 
-    def ImageSearch(self,MySoup,URL_ID):
+    def ImageSearch(self,MySoup,URL_ID,ThreadLock):
         ignoreList = ['.img', '.php']
         #with open('1.txt') as html:
         # = open('1.txt', encoding="utf8")
@@ -209,8 +238,10 @@ class Indexer:
                             temp1 =  self.lemma.lemmatize(i)
                             if temp1 != '':
                                 #if temp1 not in self.StoppingWords:
+                                ThreadLock.acquire()
                                 if not self.DataBaseMaster.ImageKeyWordDoesExist(temp1):
                                     self.DataBaseMaster.InsertImageKeyWord(temp1)
+                                ThreadLock.release()
                                 keyid1 = self.DataBaseMaster.GetImageWordID(temp1)
                                 Word_ID1 = int(keyid1[0][0])
                                 Image_ID1=int(self.DataBaseMaster.GetImageID_ByName(imgname)[0][0])
@@ -227,8 +258,10 @@ class Indexer:
                             temp= self.lemma.lemmatize(b)
                             if temp !='':
                                 #if temp not in self.StoppingWords:
+                                ThreadLock.acquire()
                                 if not self.DataBaseMaster.ImageKeyWordDoesExist(temp):
                                     self.DataBaseMaster.InsertImageKeyWord(temp)
+                                ThreadLock.release()
                                 keyid=self.DataBaseMaster.GetImageWordID(temp)
                                 Word_ID = int(keyid[0][0])
                                 Image_ID = int(self.DataBaseMaster.GetImageID_ByName(imgname)[0][0])

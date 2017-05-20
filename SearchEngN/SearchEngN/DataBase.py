@@ -71,7 +71,7 @@ class DataBaseMaster:
             self.Curser.execute("delete from KeyWordsPosition_Paragraphs where URL_ID=%d" % (URLID))
             self.Connector.commit()
             self.Curser.execute("delete from KeyWordLocationURL where URL_ID=%d" % (URLID))
-            self.Connector.commit()
+            self.Connector.commit()          
         except:
             self.Connector.rollback() 
 

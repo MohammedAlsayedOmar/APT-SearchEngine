@@ -43,6 +43,22 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="LemmaSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\LemmaSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="LemmaSharpPrebuilt, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\LemmaSharpPrebuilt.dll</HintPath>
+    </Reference>
+    <Reference Include="LemmaSharpPrebuiltCompact, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\LemmaSharpPrebuiltCompact.dll</HintPath>
+    </Reference>
+    <Reference Include="Lzma#, Version=4.12.3884.11200, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Lzma#.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
       <Private>True</Private>
@@ -233,6 +249,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="PythonManager.cs" />
     <Compile Include="UserControls\ImageUserControl.ascx.cs">
       <DependentUpon>ImageUserControl.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

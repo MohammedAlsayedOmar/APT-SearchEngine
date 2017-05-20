@@ -66,8 +66,21 @@ namespace APT
                     words = null;
                 }
 
-                //STEM WORDS BEFORE SENDING NOT IMPLEMENTED!
-
+                //STEM WORDS BEFORE SENDING NOT IMPLEMENTED!             
+                if(words != null)
+                {
+                    for (int i = 0; i < words.Length; i++)
+                    {
+                        words[i] = PythonManager.Instance.StemWord(words[i]);
+                    }
+                }
+                if (phraseWords != null)
+                {
+                    for (int i = 0; i < phraseWords.Length; i++)
+                    {
+                        phraseWords[i] = PythonManager.Instance.StemWord(phraseWords[i]);
+                    }
+                }
 
                 DataTable dt = null;
                 int total = 0;
@@ -80,11 +93,11 @@ namespace APT
                 }
                 else if (phraseWords != null && words == null)
                 {
-                    dt = controller.PhraseSearch(phraseWords);
+                    dt = controller.RankedPhraseSearch(phraseWords);
                 }
                 else if (words != null && phraseWords != null)
                 {
-                    dt = controller.CombinedSearch(words, phraseWords);
+                    dt = controller.CombinedRankedSearch(words, phraseWords);
                 }
                 
                 if(dt==null)

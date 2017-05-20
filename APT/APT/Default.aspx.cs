@@ -12,7 +12,6 @@ namespace APT
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-
         }
 
         protected void Btn_Search_Click(object sender, EventArgs e)

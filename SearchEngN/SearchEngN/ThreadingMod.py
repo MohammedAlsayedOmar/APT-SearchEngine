@@ -19,10 +19,13 @@ class myThread (threading.Thread):
             MyCraweler.Crawel(self.Lock)
         elif  self.choice == 'I':
             MyIndexer = IndexerMod.Indexer()
-            MyIndexer.StartIndexing()
+            MyIndexer.StartIndexing(self.Lock)
         elif self.choice == 'Q':
             MyCraweler = CrawelerMod.Craweler()
             MyCraweler.CrawelQOnly(self.Lock)
+        elif self.choice == 'W':
+            MyIndexer = IndexerMod.Indexer()
+            MyIndexer.StartIndexingSaver(self.Lock)
 
 def print_time(threadName, delay, counter):
     while counter:
