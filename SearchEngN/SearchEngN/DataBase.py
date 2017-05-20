@@ -1,6 +1,5 @@
 import pyodbc
 import threading
-import threading
 
 class DataBaseMaster:
 
@@ -60,7 +59,7 @@ class DataBaseMaster:
         if data:
             return True
         else :
-            return False
+            return False   
 
     def DeleteDataBeforeIndexing(self,URLID):
         try:
@@ -277,6 +276,21 @@ class DataBaseMaster:
     def ImageKeyWordDoesExist(self,Data):
         Data = self.SlashHTML(Data)
         self.Curser.execute("Select ImageKeyWords from ImageKeyWords where ImageKeyWords = ('%s')" % (Data))
+        data = self.Curser.fetchone()
+        if data:
+            return True
+        else :
+            return False
+
+    def InsertImageLink(self,URL):   
+        try:
+           self.Connector.execute("insert into ImageWebSites (ImageSite) values ('%s')" % (URL))
+           self.Connector.commit()
+        except:
+          self.Connector.rollback()
+
+    def ImageLinkDoesExist(self,Data):   
+        self.Curser.execute("select ID from ImageWebSites where ImageSite = '%s'" % (Data))
         data = self.Curser.fetchone()
         if data:
             return True

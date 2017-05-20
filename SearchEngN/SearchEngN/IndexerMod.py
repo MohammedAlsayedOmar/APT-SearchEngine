@@ -204,65 +204,71 @@ class Indexer:
                     type = src[-4:]
                     type = str(type).lower()
                     if type[0] == "." and type not in ignoreList:
-                        if src.lower().startswith("http"):
-                            imgname = str(URL_ID) + "_" + str(pos) + type
-                            try:
-                                urllib.request.urlretrieve(src, self.ImagesFileLocation + '\\' + imgname)
-                                self.DataBaseMaster.InsertImageName(imgname)
-                            except:
-                                continue
-                        else:
-                            #get base url from data base
-                            image_url = urllib.parse.urljoin(url,src)
-                            imgname = str(URL_ID) + "_" + str(pos) + type
-                            try:
-                                urllib.request.urlretrieve(src, self.ImagesFileLocation + '\\' + imgname)
-                                self.DataBaseMaster.InsertImageName(imgname)
-                            except:
-                                continue
-                        pos=pos+1
+                        ThreadLock.acquire()
+                        if not self.DataBaseMaster.ImageLinkDoesExist(src):
+                            self.DataBaseMaster.InsertImageLink(src)
+                            ThreadLock.release()
+                            if src.lower().startswith("http"):
+                                imgname = str(URL_ID) + "_" + str(pos) + type
+                                try:
+                                    urllib.request.urlretrieve(src, self.ImagesFileLocation + '\\' + imgname)
+                                    self.DataBaseMaster.InsertImageName(imgname)
+                                except:
+                                    continue
+                            else:
+                                #get base url from data base
+                                image_url = urllib.parse.urljoin(url,src)
+                                imgname = str(URL_ID) + "_" + str(pos) + type
+                                try:
+                                    urllib.request.urlretrieve(src, self.ImagesFileLocation + '\\' + imgname)
+                                    self.DataBaseMaster.InsertImageName(imgname)
+                                except:
+                                    continue
+                            pos=pos+1
 
-                            # store in database
-            ###########################################################
+                                # store in database
+                ###########################################################
 
-                        remove_format=src
-                        remove_format = re.split(r'[/]', remove_format)
-                        index=len(remove_format)-1
-                        remove_format=remove_format[index]
-                        remove_format = remove_format[:-4]  # removing last 4 chars(.png,.jpg.....)
-                        remove_format = remove_format.lower()
+                            remove_format=src
+                            remove_format = re.split(r'[/]', remove_format)
+                            index=len(remove_format)-1
+                            remove_format=remove_format[index]
+                            remove_format = remove_format[:-4]  # removing last 4 chars(.png,.jpg.....)
+                            remove_format = remove_format.lower()
 
-                        remove_format = re.split(r'[/\n\r\s+,_-]', remove_format)
+                            remove_format = re.split(r'[/\n\r\s+,_-]', remove_format)
          
-                        for i in remove_format:
-                            temp1 =  self.lemma.lemmatize(i)
-                            if temp1 != '':
-                                #if temp1 not in self.StoppingWords:
-                                ThreadLock.acquire()
-                                if not self.DataBaseMaster.ImageKeyWordDoesExist(temp1):
-                                    self.DataBaseMaster.InsertImageKeyWord(temp1)
-                                ThreadLock.release()
-                                keyid1 = self.DataBaseMaster.GetImageWordID(temp1)
-                                Word_ID1 = int(keyid1[0][0])
-                                Image_ID1=int(self.DataBaseMaster.GetImageID_ByName(imgname)[0][0])
-                                self.DataBaseMaster.Link_URL_KeyWords(URL_ID,Word_ID1,Image_ID1)
+                            for i in remove_format:
+                                temp1 =  self.lemma.lemmatize(i)
+                                if temp1 != '':
+                                    #if temp1 not in self.StoppingWords:
+                                    ThreadLock.acquire()
+                                    if not self.DataBaseMaster.ImageKeyWordDoesExist(temp1):
+                                        self.DataBaseMaster.InsertImageKeyWord(temp1)
+                                    ThreadLock.release()
+                                    keyid1 = self.DataBaseMaster.GetImageWordID(temp1)
+                                    Word_ID1 = int(keyid1[0][0])
+                                    Image_ID1=int(self.DataBaseMaster.GetImageID_ByName(imgname)[0][0])
+                                    self.DataBaseMaster.Link_URL_KeyWords(URL_ID,Word_ID1,Image_ID1)
 
-                ####################################################################################
-                        alt=image.get('alt','')
-                        alt = alt.lower()
+                    ####################################################################################
+                            alt=image.get('alt','')
+                            alt = alt.lower()
 
-                        alt = re.split(r"[\\/\n\r\s+,_-]", alt)
+                            alt = re.split(r"[\\/\n\r\s+,_-]", alt)
 
 
-                        for b in alt:
-                            temp= self.lemma.lemmatize(b)
-                            if temp !='':
-                                #if temp not in self.StoppingWords:
-                                ThreadLock.acquire()
-                                if not self.DataBaseMaster.ImageKeyWordDoesExist(temp):
-                                    self.DataBaseMaster.InsertImageKeyWord(temp)
-                                ThreadLock.release()
-                                keyid=self.DataBaseMaster.GetImageWordID(temp)
-                                Word_ID = int(keyid[0][0])
-                                Image_ID = int(self.DataBaseMaster.GetImageID_ByName(imgname)[0][0])
-                                self.DataBaseMaster.Link_URL_KeyWords(URL_ID, Word_ID1,Image_ID)  # 1: from musgi(file opened id),src:get id from imagename
+                            for b in alt:
+                                temp= self.lemma.lemmatize(b)
+                                if temp !='':
+                                    #if temp not in self.StoppingWords:
+                                    ThreadLock.acquire()
+                                    if not self.DataBaseMaster.ImageKeyWordDoesExist(temp):
+                                        self.DataBaseMaster.InsertImageKeyWord(temp)
+                                    ThreadLock.release()
+                                    keyid=self.DataBaseMaster.GetImageWordID(temp)
+                                    Word_ID = int(keyid[0][0])
+                                    Image_ID = int(self.DataBaseMaster.GetImageID_ByName(imgname)[0][0])
+                                    self.DataBaseMaster.Link_URL_KeyWords(URL_ID, Word_ID1,Image_ID)  # 1: from musgi(file opened id),src:get id from imagename
+                        else:
+                            ThreadLock.release()                          
